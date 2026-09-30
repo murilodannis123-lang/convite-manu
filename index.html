@@ -541,9 +541,8 @@ body.fechado{overflow:hidden}
       <h3 class="gold-text" id="qTitle">Qual dessas músicas a Manu gosta mais?</h3>
       <button class="x" id="fechar" type="button" aria-label="Fechar">×</button>
     </header>
-    <p class="sub">Ouça as músicas no YouTube e depois toque em <b>É essa!</b> na que você acha que é a favorita da Manu.</p>
+    <p class="sub">Ouça as músicas abaixo e depois toque em <b>É essa!</b> na que você acha que é a favorita da Manu.</p>
     <div class="songs" id="songs"></div>
-    <p class="note">Os links abrem os clipes oficiais no YouTube. Depois é só voltar aqui pra responder.</p>
   </div>
 </div>
 
@@ -957,10 +956,10 @@ const CONFIG = {
 const QUIZ = {
   certa: "super-trouper",
   musicas: [
-    { id:"winner", video:"92cwKCU8Z5c", titulo:"The Winner Takes It All", artista:"ABBA", },
-    { id:"should-i-stay", video:"xMaE6toi4mk", titulo:"Should I Stay or Should I Go", artista:"The Clash", },
-    { id:"super-trouper", video:"BshxCIjNEjY", titulo:"Super Trouper", artista:"ABBA", },
-    { id:"your-love", video:"4N1iwQxiHrs", titulo:"Your Love", artista:"The Outfield", }
+    { id:"winner", audio:"ABBA_-_Winner_take_it_all_(mp3.pm).mp3", titulo:"The Winner Takes It All", artista:"ABBA", },
+    { id:"should-i-stay", audio:"Living_Colour_-_Should_I_Stay_Or_Should_I_Go_(mp3.pm).mp3", titulo:"Should I Stay or Should I Go", artista:"The Clash", },
+    { id:"super-trouper", audio:"Julia_Lindholm_-_Super_Trouper_(mp3.pm).mp3", titulo:"Super Trouper", artista:"ABBA", },
+    { id:"your-love", audio:"Outfield_-_Your_Love_(mp3.pm).mp3", titulo:"Your Love", artista:"The Outfield", }
   ]
 };
 
@@ -1121,18 +1120,19 @@ const Fogos = (() => {
 })();
 
 /* ---------- Quiz musical ---------- */
-const icYt = '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>';
 const lista = $("songs");
 QUIZ.musicas.forEach(m => {
   const row = document.createElement("div");
   row.className = "song"; row.id = "song-" + m.id; row.dataset.id = m.id;
   row.innerHTML = `<span class="info"><span class="t">${m.titulo}</span><span class="a">${m.artista}</span></span>
-    <a class="yt" href="https://www.youtube.com/watch?v=${m.video}" target="_blank" rel="noopener">${icYt}Ouvir no YouTube</a>
+    <audio controls src="${m.audio}" class="audio-player" style="width:100%; margin:8px 0; height: 36px;"></audio>
     <button type="button" class="guess">É essa!</button>`;
   row.querySelector(".guess").addEventListener("click", () => chutar(m, row));
   lista.appendChild(row);
 });
-function parar(){}
+function parar(){
+  document.querySelectorAll('audio').forEach(a => a.pause());
+}
 
 let toastT;
 function aviso(html, tipo){

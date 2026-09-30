@@ -1125,6 +1125,16 @@ QUIZ.musicas.forEach(m => {
     <audio controls src="${m.audio}" class="audio-player" style="width:100%; margin:8px 0; height: 36px;"></audio>
     <button type="button" class="guess">É essa!</button>`;
   row.querySelector(".guess").addEventListener("click", () => chutar(m, row));
+  
+  const aud = row.querySelector("audio");
+  aud.addEventListener("play", () => {
+    document.querySelectorAll('audio').forEach(a => { if(a !== aud) a.pause(); });
+    if (typeof Som !== 'undefined' && !Som.mudo) {
+      Som.alternar();
+      if (typeof pintaSom === 'function') pintaSom();
+    }
+  });
+
   lista.appendChild(row);
 });
 function parar(){

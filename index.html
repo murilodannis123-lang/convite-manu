@@ -1118,6 +1118,7 @@ const Fogos = (() => {
 
 /* ---------- Quiz musical ---------- */
 const lista = $("songs");
+let quizPausouSom = false;
 QUIZ.musicas.forEach(m => {
   const row = document.createElement("div");
   row.className = "song"; row.id = "song-" + m.id; row.dataset.id = m.id;
@@ -1130,10 +1131,25 @@ QUIZ.musicas.forEach(m => {
   aud.addEventListener("play", () => {
     document.querySelectorAll('audio').forEach(a => { if(a !== aud) a.pause(); });
     if (typeof Som !== 'undefined' && !Som.mudo) {
+      quizPausouSom = true;
       Som.alternar();
       if (typeof pintaSom === 'function') pintaSom();
     }
   });
+
+  const checkResume = () => {
+    const algumaTocando = Array.from(document.querySelectorAll('audio')).some(a => !a.paused);
+    if (!algumaTocando && quizPausouSom) {
+      quizPausouSom = false;
+      if (typeof Som !== 'undefined' && Som.mudo) {
+        Som.alternar();
+        if (typeof pintaSom === 'function') pintaSom();
+      }
+    }
+  };
+
+  aud.addEventListener("pause", checkResume);
+  aud.addEventListener("ended", checkResume);
 
   lista.appendChild(row);
 });

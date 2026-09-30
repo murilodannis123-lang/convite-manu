@@ -426,6 +426,9 @@ body.fechado{overflow:hidden}
 .rank-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .rank-tabs button{padding:9px 6px;border-radius:999px;border:2.5px solid var(--marrom);background:var(--papel);color:var(--marrom);font-family:var(--poster);font-size:12px;letter-spacing:.04em;cursor:pointer}
 .rank-tabs button[aria-selected="true"]{background:var(--laranja);color:var(--papel)}
+.ao-vivo{margin:0;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--poster);font-size:13px;letter-spacing:.14em;color:#b3264a}
+.ao-vivo i{width:10px;height:10px;border-radius:50%;background:#dc2f4f;box-shadow:0 0 0 0 rgba(220,47,79,.6);animation:vivo 1.4s infinite}
+@keyframes vivo{70%{box-shadow:0 0 0 9px rgba(220,47,79,0)}100%{box-shadow:0 0 0 0 rgba(220,47,79,0)}}
 .rank-nota{margin:0;font-size:12px;color:var(--suave);text-align:center}
 @media (prefers-reduced-motion:reduce){.carta,.prato,.braco,.lp,.lp-capa,.lp-disco{transition:none}}
 #fx{position:fixed;inset:0;width:100%;height:100%;z-index:30;pointer-events:none}
@@ -939,12 +942,8 @@ const CONFIG = {
     endereco: "Av. Ampélio Gazzetta, 771 · Green Village · Nova Odessa - SP",
     mapa: "https://www.google.com/maps/search/?api=1&query=Top%20Fun%20Eventos%20Nova%20Odessa&query_place_id=ChIJkTSfhMuXyJQRZ6N4q4Dq8Dc"
   },
-  ranking: {                    // Google Forms "Ranking Jogos Manu" + planilha publicada (CSV)
-    acao: "https://docs.google.com/forms/d/e/1FAIpQLSfmOEFmZmvKNxMdw33MhORCU26Z4qFyrfeo3f6371u06l2tzw/formResponse",
-    campoNome: "entry.413621328",
-    campoJogo: "entry.794701254",
-    campoPontos: "entry.1743684719",
-    csv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQa5dm5yHhrBBHTL7gVFo3spLT_634O1dlq61zQ6AqLS1lxgU9YZEAxQrenHiEmFHfTnCl9c9s8y5xv/pub?gid=1171754810&single=true&output=csv"
+  ranking: {                    // Apps Script "Ranking ao vivo - Convite Manu" (grava e lê a planilha na hora)
+    api: "https://script.google.com/macros/s/AKfycbxa8oZgor0E6C0YIpGwU1bRNqC52ztKOZuv82ZHaUVnISPT6kZJ_2uIpkMVQkXQojZThQ/exec"
   },
   presenca: {                   // Google Forms que recebe as confirmações (a planilha fica com a família)
     acao: "https://docs.google.com/forms/d/e/1FAIpQLSeKCQeibC4Xs6NNOOrEvFXKejc6JaaTrVdtCgMLkXEN3NA6dA/formResponse",
@@ -1389,64 +1388,42 @@ const Vitrola = (() => {
   }));
 })();
 
-/* ---------- Ranking online (Google Forms grava, planilha publicada em CSV é lida) ---------- */
+/* ---------- Ranking ao vivo (Apps Script da planilha "Ranking Jogos Manu") ---------- */
 const NA_CLAUDE = /claude\.ai|claudeusercontent|anthropic/.test(location.hostname);
 const Ranking = (() => {
   const R = CONFIG.ranking || {};
-  const online = !!(R.acao && R.campoNome && R.campoJogo && R.campoPontos && R.csv) && !NA_CLAUDE;
+  const online = !!R.api && !NA_CLAUDE;
   const KEY = "ranking-manu-local";
   const lerLocal = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (_) { return []; } };
   const salvarLocal = l => { try { localStorage.setItem(KEY, JSON.stringify(l.slice(-80))); } catch (_) {} };
   const limpaNome = n => String(n || "").replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 20);
   const chave = n => limpaNome(n).toLocaleLowerCase("pt-BR");
-  let cache = null, cacheT = 0;
-  function parseCSV(txt) {
-    const rows = []; let row = [], cur = "", q = false;
-    for (let i = 0; i < txt.length; i++) {
-      const c = txt[i];
-      if (q) { if (c === '"') { if (txt[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
-      else if (c === '"') q = true;
-      else if (c === ",") { row.push(cur); cur = ""; }
-      else if (c === "\n" || c === "\r") { if (c === "\r" && txt[i + 1] === "\n") i++; row.push(cur); rows.push(row); row = []; cur = ""; }
-      else cur += c;
-    }
-    if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
-    return rows;
-  }
-  async function baixar() {
-    if (!online) return [];
-    if (cache && Date.now() - cacheT < 15000) return cache;
-    const r = await fetch(R.csv + "&t=" + Date.now(), { cache: "no-store" });
-    if (!r.ok) throw new Error("csv " + r.status);
-    const linhas = parseCSV(await r.text());
-    const cab = (linhas.shift() || []).map(c => c.toLowerCase());
-    const iN = cab.findIndex(c => c.includes("nome")), iJ = cab.findIndex(c => c.includes("jogo")), iP = cab.findIndex(c => c.includes("ponto"));
-    if (iN < 0 || iJ < 0 || iP < 0) return (cache = []);
-    cache = linhas.map(l => ({ nome: limpaNome(l[iN]), jogo: String(l[iJ] || "").trim(), pontos: Math.round(Number(String(l[iP] || "").replace(",", "."))) }))
-      .filter(x => x.nome && x.jogo && Number.isFinite(x.pontos) && x.pontos >= 0 && x.pontos <= 100000);
-    cacheT = Date.now();
-    return cache;
-  }
+  const valida = l => (Array.isArray(l) ? l : []).map(x => ({ nome: limpaNome(x && x.nome), pontos: Math.round(Number(x && x.pontos)) }))
+    .filter(x => x.nome && Number.isFinite(x.pontos) && x.pontos >= 0);
+  const doLocal = jogo => {
+    const melhor = new Map();
+    lerLocal().filter(x => x.jogo === jogo).forEach(x => { const k = chave(x.nome); const a = melhor.get(k); if (!a || x.pontos > a.pontos) melhor.set(k, { nome: x.nome, pontos: x.pontos }); });
+    return [...melhor.values()].sort((a, b) => b.pontos - a.pontos || a.nome.localeCompare(b.nome, "pt-BR"));
+  };
+  const comTempo = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("tempo")), ms))]);
   async function enviar(nome, jogo, pontos) {
     nome = limpaNome(nome); pontos = Math.max(0, Math.round(pontos));
     const l = lerLocal(); l.push({ nome, jogo, pontos, t: Date.now() }); salvarLocal(l);
-    cache = null;
-    if (!online) return false;
+    if (!online) return { ok: false };
     try {
-      const b = new URLSearchParams();
-      b.append(R.campoNome, nome); b.append(R.campoJogo, jogo); b.append(R.campoPontos, String(pontos));
-      await fetch(R.acao, { method: "POST", mode: "no-cors", body: b });
-      return true;
-    } catch (_) { return false; }
+      const r = await comTempo(fetch(R.api, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ nome, jogo, pontos }) }), 15000);
+      const j = await r.json();
+      return { ok: !!j.ok, arr: j.ok ? valida(j.lista) : null };
+    } catch (_) { return { ok: false }; }
   }
   async function lista(jogo) {
-    let rem = [], erro = false;
-    try { rem = await baixar(); } catch (_) { erro = true; }
-    const todos = rem.filter(x => x.jogo === jogo).concat(lerLocal().filter(x => x.jogo === jogo));
-    const melhor = new Map();
-    todos.forEach(x => { const k = chave(x.nome); const a = melhor.get(k); if (!a || x.pontos > a.pontos) melhor.set(k, { nome: x.nome, pontos: x.pontos }); });
-    const arr = [...melhor.values()].sort((a, b) => b.pontos - a.pontos || a.nome.localeCompare(b.nome, "pt-BR"));
-    return { arr, online, erro };
+    if (!online) return { arr: doLocal(jogo), online, erro: false };
+    try {
+      const r = await comTempo(fetch(R.api + "?jogo=" + encodeURIComponent(jogo) + "&t=" + Date.now()), 12000);
+      const j = await r.json();
+      if (!j.ok) throw new Error("resposta");
+      return { arr: valida(j.lista), online, erro: false };
+    } catch (_) { return { arr: doLocal(jogo), online, erro: true }; }
   }
   return { enviar, lista, chave, limpaNome, get online() { return online; } };
 })();
@@ -1467,7 +1444,7 @@ const Jogos = (() => {
     kids.flat().forEach(c => c != null && e.appendChild(typeof c === "string" ? document.createTextNode(c) : c));
     return e;
   };
-  const limpar = () => { if (ativo && ativo.parar) ativo.parar(); ativo = null; wrap.replaceChildren(); box.scrollTop = 0; };
+  const limpar = () => { pararVivo(); if (ativo && ativo.parar) ativo.parar(); ativo = null; wrap.replaceChildren(); box.scrollTop = 0; };
   const topo = (titulo, voltar, ptsEl) => el("div", { class: "j-top" },
     el("button", { class: "j-voltar", type: "button", text: "← Voltar", onclick: voltar }),
     el("h2", { text: titulo }), ptsEl || null);
@@ -1544,55 +1521,71 @@ const Jogos = (() => {
     alvo.append(ol);
   }
   const notaRank = r => r.online
-    ? (r.erro ? "Não consegui carregar o ranking geral agora. Mostrando os pontos deste aparelho." : "Ranking geral de todos os convidados. Pontos novos podem levar alguns minutos para aparecer para os outros.")
-    : "Ranking deste aparelho. O ranking geral aparece no link oficial do convite.";
+    ? (r.erro ? "Sem conexão com o ranking agora. Mostrando os pontos deste aparelho; tento de novo em instantes." : "")
+    : "Ranking deste aparelho. O ranking geral fica no link oficial do convite.";
+  const seloVivo = () => el("p", { class: "ao-vivo" }, el("i"), "AO VIVO · atualiza sozinho");
+  let vivo = 0;
+  const pararVivo = () => { clearInterval(vivo); vivo = 0; };
+  const posicao = (alvo, arr, pontos) => {
+    const k = Ranking.chave(nome), i = arr.findIndex(it => Ranking.chave(it.nome) === k);
+    alvo.replaceChildren();
+    if (i < 0) { alvo.textContent = "Seus pontos foram registrados."; return; }
+    const recorde = pontos != null && arr[i].pontos > pontos ? ` Seu recorde é ${arr[i].pontos}.` : "";
+    alvo.append("Você está em ", el("b", { text: `${i + 1}º lugar` }), ` de ${arr.length}.${recorde} `);
+    if (i === 0) alvo.append(el("b", { text: "Você lidera o ranking!" }));
+    else alvo.append("Na sua frente: ", el("b", { text: arr[i - 1].nome }), `, com ${arr[i - 1].pontos} pontos.`);
+  };
 
   async function telaFim(id, pontos, detalhe) {
     limpar();
     const j = jogoPorId(id);
     const pos = el("p", { class: "fim-pos", text: "Salvando seus pontos..." });
-    const lista = el("div");
-    const nota = el("p", { class: "rank-nota" });
+    const lista = el("div"), nota = el("p", { class: "rank-nota" }), selo = seloVivo();
+    selo.hidden = !Ranking.online;
     wrap.append(topo(j.nome, menu),
       el("div", { class: "j-card" },
         el("p", { class: "fim-pos", text: "Fim de jogo, " + nome + "!" }),
         el("p", { class: "fim-pts", text: String(pontos) }),
         el("p", { class: "fim-pos", text: "pontos" + (detalhe ? " · " + detalhe : "") })),
-      pos, lista, nota,
+      pos, selo, lista, nota,
       el("div", { class: "j-acoes" },
         el("button", { class: "j-btn", type: "button", text: "Jogar de novo", onclick: () => iniciar(id) }),
         el("button", { class: "j-btn sec", type: "button", text: "Outros jogos", onclick: menu })));
     if (pontos >= 1) Fogos.start(2500);
-    await Ranking.enviar(nome, id, pontos);
-    const r = await Ranking.lista(id);
-    const k = Ranking.chave(nome);
-    const i = r.arr.findIndex(it => Ranking.chave(it.nome) === k);
-    pos.replaceChildren();
-    if (i < 0) pos.textContent = "Seus pontos foram registrados.";
-    else {
-      const recorde = r.arr[i].pontos > pontos ? ` Seu recorde é ${r.arr[i].pontos}.` : "";
-      pos.append("Você está em ", el("b", { text: `${i + 1}º lugar` }), ` de ${r.arr.length}.${recorde} `);
-      if (i === 0) pos.append(el("b", { text: "Você lidera o ranking!" }));
-      else pos.append("Na sua frente: ", el("b", { text: r.arr[i - 1].nome }), `, com ${r.arr[i - 1].pontos} pontos.`);
-    }
-    desenhaRank(lista, r.arr, nome);
-    nota.textContent = notaRank(r);
+    const env = await Ranking.enviar(nome, id, pontos);
+    if (!lista.isConnected) return;
+    let r = env.arr ? { arr: env.arr, online: true, erro: false } : await Ranking.lista(id);
+    if (!lista.isConnected) return;
+    if (Ranking.online && !env.ok) r.erro = true;
+    posicao(pos, r.arr, pontos); desenhaRank(lista, r.arr, nome); nota.textContent = notaRank(r);
+    if (Ranking.online) vivo = setInterval(async () => {
+      const n = await Ranking.lista(id);
+      if (!lista.isConnected) return pararVivo();
+      if (!n.erro) { posicao(pos, n.arr, pontos); desenhaRank(lista, n.arr, nome); }
+      nota.textContent = notaRank(n);
+    }, 5000);
   }
 
   async function telaRanking(id) {
     limpar();
-    const lista = el("div"), nota = el("p", { class: "rank-nota" });
+    const lista = el("div"), nota = el("p", { class: "rank-nota" }), selo = seloVivo();
+    selo.hidden = !Ranking.online;
     const tabs = el("div", { class: "rank-tabs", role: "tablist" });
-    const carregar = async jid => {
+    let atual = id;
+    const carregar = async (jid, silencioso) => {
+      atual = jid;
       tabs.querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.id === jid)));
-      lista.replaceChildren(el("p", { class: "rank-vazio", text: "Carregando..." }));
+      if (!silencioso) lista.replaceChildren(el("p", { class: "rank-vazio", text: "Carregando..." }));
       const r = await Ranking.lista(jid);
-      desenhaRank(lista, r.arr, nome); nota.textContent = notaRank(r);
+      if (!lista.isConnected || atual !== jid) return;
+      if (!(silencioso && r.erro)) desenhaRank(lista, r.arr, nome);
+      nota.textContent = notaRank(r);
     };
     LISTA.forEach(j => { const b = el("button", { type: "button", role: "tab", text: j.nome, onclick: () => carregar(j.id) }); b.dataset.id = j.id; tabs.append(b); });
-    wrap.append(topo("Ranking", menu), tabs, lista, nota,
-      el("button", { class: "j-btn", type: "button", text: "Jogar " + jogoPorId(id).nome, onclick: () => iniciar(id) }));
+    wrap.append(topo("Ranking", menu), selo, tabs, lista, nota,
+      el("button", { class: "j-btn", type: "button", text: "Jogar " + jogoPorId(id).nome, onclick: () => iniciar(atual) }));
     carregar(id);
+    if (Ranking.online) vivo = setInterval(() => { if (!lista.isConnected) return pararVivo(); carregar(atual, true); }, 5000);
   }
 
   /* ----- Memória Retrô ----- */

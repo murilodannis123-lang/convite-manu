@@ -33,7 +33,9 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 button,a{-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%}
+html,body{margin:0;min-height:100%;overflow-x:hidden}
+.wrap{overflow-x:clip}
+@supports not (overflow:clip){.wrap{overflow-x:hidden}}
 body{
   background:var(--creme);
   color:var(--tinta);
@@ -281,6 +283,151 @@ body.fechado{overflow:hidden}
 .rdone{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding-block:8px}
 .rdone strong{font-family:var(--groovy);font-weight:400;font-size:38px;line-height:1.1;color:var(--verde);-webkit-text-stroke:1px var(--marrom)}
 .rdone p{margin:0 0 8px;font-size:16px;line-height:1.45;color:var(--marrom)}
+/* Vitrola: braço, prato que desliza e prateleira de discos */
+.toca{position:relative;width:min(78vw,300px);max-width:100%;margin-top:4px}
+.toca .vinyl{width:100%}
+.prato{position:absolute;inset:0;transition:transform .45s cubic-bezier(.5,0,.3,1),opacity .45s}
+.prato.sai{transform:translateX(125%) rotate(40deg);opacity:0}
+.prato.entra{transform:translateX(-125%);opacity:0;transition:none}
+.braco{position:absolute;right:-9%;top:-7%;width:36%;aspect-ratio:120/260;pointer-events:none;
+  transform-origin:72% 9%;transform:rotate(0deg);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:2;filter:drop-shadow(3px 4px 0 rgba(74,35,15,.25))}
+.braco.levantado{transform:rotate(-24deg)}
+.braco svg{width:100%;height:100%;display:block}
+.agora{margin:-14px 0 0;font-size:15px;color:var(--suave);text-align:center;min-height:1.4em}
+.agora b{font-family:var(--poster);font-weight:400;letter-spacing:.06em;color:var(--marrom)}
+.capas{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;padding:12px 12px 16px;border-radius:18px;
+  background:var(--marrom);box-shadow:5px 5px 0 var(--laranja);margin-top:-8px}
+.capas-tit{grid-column:1/-1;margin:0 0 2px;font-family:var(--poster);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--mostarda);text-align:left}
+.capa{position:relative;display:flex;flex-direction:column;gap:6px;align-items:center;padding:0;border:none;background:none;cursor:pointer;color:var(--creme);font:inherit}
+.capa .arte{position:relative;width:100%;aspect-ratio:1;border-radius:6px;overflow:hidden;border:2px solid var(--creme);transition:transform .18s}
+.capa .arte::after{content:"";position:absolute;right:-30%;top:10%;width:80%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,var(--c2) 0 14%,#171113 15% 16%,#171113 17%),repeating-radial-gradient(circle,#151012 0 1px,#241b1c 1.4px 2.2px);opacity:0;transition:opacity .2s,right .3s}
+.capa .nome{font-family:var(--poster);font-size:10px;letter-spacing:.04em;line-height:1.15;text-align:center;min-height:2.3em}
+.capa[aria-pressed="true"] .arte{transform:translateY(-6px) rotate(-3deg);border-color:var(--mostarda);box-shadow:0 0 0 3px var(--mostarda)}
+.capa[aria-pressed="true"] .nome{color:var(--mostarda)}
+.capa:focus-visible .arte{outline:3px solid var(--mostarda);outline-offset:2px}
+.capa:hover .arte{transform:translateY(-3px)}
+.a-disco{background:repeating-linear-gradient(180deg,var(--c1) 0 22%,var(--c2) 22% 44%,var(--c3) 44% 66%,var(--creme) 66% 100%)}
+.a-disco b,.a-twist b,.a-soul b,.a-funk b{position:absolute;left:8%;bottom:6%;font-family:var(--groovy);font-weight:400;font-size:clamp(13px,4vw,18px);color:var(--creme);-webkit-text-stroke:1px var(--marrom);line-height:1}
+.a-twist{background:radial-gradient(circle at 70% 30%,var(--creme) 0 16%,transparent 17%),repeating-linear-gradient(135deg,var(--c1) 0 10px,var(--c2) 10px 20px)}
+.a-soul{background:radial-gradient(circle at 50% 110%,var(--c2) 0 35%,var(--c1) 35% 55%,var(--c3) 55% 75%,var(--creme) 75%)}
+.a-funk{background:repeating-conic-gradient(from 0deg at 50% 50%,var(--c1) 0 20deg,var(--c3) 20deg 40deg)}
+
+/* Abertura: capa de LP */
+.lp{position:relative;width:min(62vw,240px);aspect-ratio:1;margin:16px 0 20px;transition:transform .5s cubic-bezier(.5,0,.3,1)}
+.lp-disco{position:absolute;inset:4%;border-radius:50%;z-index:1;transform:translateX(16%);
+  background:radial-gradient(circle,var(--creme) 0 3%,var(--mostarda) 3% 12%,var(--laranja) 12% 20%,var(--rosa) 20% 25%,#171113 26%),repeating-radial-gradient(circle,#151012 0 1.2px,#241b1c 1.6px 2.6px);
+  box-shadow:0 0 0 3px var(--marrom);transition:transform .7s cubic-bezier(.3,.1,.2,1)}
+.lp-capa{position:absolute;inset:0;z-index:2;border-radius:10px;border:3px solid var(--marrom);box-shadow:6px 6px 0 var(--marrom);overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;padding:10%;text-align:left;
+  background:radial-gradient(circle at 50% 108%,var(--rosa) 0 22%,var(--laranja) 22% 36%,var(--mostarda) 36% 50%,var(--verde) 50% 64%,transparent 64%),
+    repeating-linear-gradient(180deg,transparent 0 12px,rgba(247,232,200,.0) 12px 16px),var(--papel);
+  transition:transform .6s cubic-bezier(.5,0,.3,1)}
+.lp-capa::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(180deg,transparent 0 13px,var(--papel) 13px 17px);opacity:.9;
+  -webkit-mask:radial-gradient(circle at 50% 108%,#000 0 64%,transparent 64%);mask:radial-gradient(circle at 50% 108%,#000 0 64%,transparent 64%)}
+.lp-nome{position:relative;font-family:var(--groovy);font-size:clamp(42px,15vw,62px);line-height:.95;color:var(--papel);-webkit-text-stroke:2px var(--marrom);
+  text-shadow:3px 3px 0 var(--mostarda),6px 6px 0 var(--laranja),9px 9px 0 var(--marrom)}
+.lp-sub{position:relative;margin-top:10px;font-family:var(--poster);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--marrom);background:var(--papel);padding:3px 8px;border-radius:999px;border:2px solid var(--marrom)}
+.lp-braco{position:absolute;z-index:3;right:-26%;top:-10%;width:30%;aspect-ratio:120/260;transform-origin:72% 9%;transform:rotate(-38deg);opacity:0;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .3s}
+.lp-braco svg{width:100%;height:100%;display:block}
+.splash.abrindo .lp{transform:translateX(-14%)}
+.splash.abrindo .lp-capa{transform:translateX(-18%) rotate(-5deg)}
+.splash.abrindo .lp-disco{transform:translateX(52%);animation:giraSplash 1.8s linear infinite}
+.splash.abrindo .lp-braco{opacity:1}
+.splash.agulha .lp-braco{transform:rotate(-6deg)}
+.splash.abrindo .s-btn,.splash.abrindo .s-note{opacity:0;transition:opacity .25s}
+.ondas-tela{position:fixed;inset:0;z-index:60;pointer-events:none;display:grid;grid-template-columns:repeat(4,1fr)}
+.ondas-tela i{display:block;transform:translateY(105%);border-radius:40px 40px 0 0}
+.ondas-tela i:nth-child(1){background:var(--mostarda)}
+.ondas-tela i:nth-child(2){background:var(--laranja)}
+.ondas-tela i:nth-child(3){background:var(--rosa)}
+.ondas-tela i:nth-child(4){background:var(--verde)}
+.ondas-tela.cobre i{animation:ondaSobe .55s cubic-bezier(.6,0,.3,1) forwards}
+.ondas-tela.revela i{transform:translateY(0);animation:ondaSai .6s cubic-bezier(.6,0,.3,1) forwards;border-radius:0 0 40px 40px}
+.ondas-tela i:nth-child(2){animation-delay:.07s!important}
+.ondas-tela i:nth-child(3){animation-delay:.14s!important}
+.ondas-tela i:nth-child(4){animation-delay:.21s!important}
+@keyframes ondaSobe{to{transform:translateY(0);border-radius:0}}
+@keyframes ondaSai{from{transform:translateY(0)}to{transform:translateY(-105%)}}
+
+/* Jogos */
+#bJogos{background:#cfe07a}
+.jogos{position:fixed;inset:0;z-index:25;background:var(--creme);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.jogos::before{content:"";position:fixed;inset:0;z-index:-1;background:repeating-conic-gradient(from 0deg at 50% 0%,rgba(232,105,42,.08) 0 7deg,transparent 7deg 14deg),var(--creme)}
+.j-wrap{max-width:460px;margin:0 auto;padding-inline:16px;padding-block:14px 40px;display:flex;flex-direction:column;gap:16px}
+.j-top{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:2;padding-block:10px;background:var(--creme)}
+.j-top h2{flex:1;margin:0;font-family:var(--poster);font-weight:400;font-size:22px;color:var(--marrom);text-align:left;text-wrap:balance}
+.j-voltar{flex:none;height:40px;padding:0 14px;border-radius:999px;border:2.5px solid var(--marrom);background:var(--papel);color:var(--marrom);font-family:var(--poster);font-size:14px;cursor:pointer;box-shadow:3px 3px 0 var(--marrom)}
+.j-pts{flex:none;min-width:64px;padding:6px 10px;border-radius:12px;background:var(--marrom);color:var(--mostarda);font-family:var(--groovy);font-size:20px;text-align:center;font-variant-numeric:tabular-nums}
+.j-card{padding:16px;border-radius:20px;background:var(--papel);border:2.5px solid var(--marrom);box-shadow:4px 4px 0 var(--marrom);text-align:left}
+.j-card h3{margin:0 0 4px;font-family:var(--groovy);font-weight:400;font-size:26px;line-height:1.1;color:var(--laranja);-webkit-text-stroke:1px var(--marrom)}
+.j-card p{margin:0 0 12px;font-size:15px;line-height:1.45;color:var(--tinta)}
+.j-acoes{display:flex;gap:10px;flex-wrap:wrap}
+.j-btn{flex:1;min-width:120px;padding:12px 14px;border-radius:999px;border:2.5px solid var(--marrom);box-shadow:3px 3px 0 var(--marrom);cursor:pointer;
+  background:var(--mostarda);color:var(--marrom);font-family:var(--poster);font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+.j-btn.sec{background:var(--papel)}
+.j-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--marrom)}
+.j-btn:focus-visible,.j-voltar:focus-visible{outline:3px solid var(--verde);outline-offset:2px}
+.j-ola{margin:0;font-size:16px;color:var(--marrom)}
+.j-ola b{font-family:var(--poster);font-weight:400}
+.j-link{border:none;background:none;padding:0;color:var(--laranja);font:inherit;text-decoration:underline;cursor:pointer}
+.j-nome{display:flex;flex-direction:column;gap:10px}
+.j-nome label{font-family:var(--poster);font-size:15px;color:var(--marrom);text-align:left}
+.j-nome input{font:18px var(--texto);color:var(--tinta);background:var(--creme);border:2.5px solid var(--marrom);border-radius:14px;padding:12px 14px;width:100%}
+.j-nome input:focus{outline:3px solid var(--mostarda)}
+.j-dica{margin:0;font-size:13px;color:var(--suave);text-align:left}
+.j-status{display:flex;gap:10px;justify-content:space-between;font-family:var(--poster);font-size:14px;color:var(--marrom)}
+/* Memória */
+.mem{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;perspective:800px}
+.carta{position:relative;min-width:0;width:100%;aspect-ratio:3/4;border:none;padding:0;background:none;cursor:pointer;transform-style:preserve-3d;transition:transform .35s}
+.carta.virada,.carta.ok{transform:rotateY(180deg)}
+.carta>span{position:absolute;inset:0;border-radius:12px;border:2.5px solid var(--marrom);backface-visibility:hidden;-webkit-backface-visibility:hidden;display:grid;place-items:center}
+.carta .verso{background:repeating-radial-gradient(circle at 50% 50%,var(--laranja) 0 6px,var(--mostarda) 6px 12px);box-shadow:3px 3px 0 var(--marrom)}
+.carta .frente{background:var(--papel);transform:rotateY(180deg)}
+.carta .frente svg{width:72%;height:72%;max-width:72%}
+.carta.ok .frente{background:#cfe8e1}
+.carta:focus-visible .verso{outline:3px solid var(--verde);outline-offset:2px}
+/* Pega o disco */
+.pega{position:relative;width:100%;aspect-ratio:3/4;-webkit-user-select:none;user-select:none;max-height:66vh;border-radius:18px;overflow:hidden;border:2.5px solid var(--marrom);
+  background:linear-gradient(180deg,#fbe6c0,#f6cf93);touch-action:none;box-shadow:4px 4px 0 var(--marrom)}
+.pega canvas{position:absolute;inset:0;width:100%;height:100%}
+.pega-msg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;background:rgba(251,242,222,.85);font-size:16px;color:var(--marrom)}
+.pega-msg strong{display:block;font-family:var(--groovy);font-weight:400;font-size:30px;color:var(--laranja);-webkit-text-stroke:1px var(--marrom);margin-bottom:6px}
+.vidas{color:var(--rosa);letter-spacing:2px}
+/* Décadas */
+.dec{display:flex;flex-direction:column;gap:14px}
+.dec-q{min-height:150px;display:grid;place-items:center;padding:22px 16px;border-radius:20px;background:var(--papel);border:2.5px solid var(--marrom);box-shadow:4px 4px 0 var(--marrom);
+  font-family:var(--texto);font-size:22px;line-height:1.3;color:var(--marrom);text-align:center;text-wrap:balance}
+.dec-bar{height:10px;border-radius:999px;background:var(--creme-2);overflow:hidden;border:2px solid var(--marrom)}
+.dec-bar i{display:block;height:100%;width:100%;background:var(--laranja);transform-origin:left}
+.dec-ops{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.dec-ops button{padding:18px 10px;border-radius:18px;border:2.5px solid var(--marrom);box-shadow:4px 4px 0 var(--marrom);cursor:pointer;font-family:var(--groovy);font-size:24px;color:var(--papel);-webkit-text-stroke:1px var(--marrom)}
+.dec-ops button:nth-child(1){background:var(--rosa)}
+.dec-ops button:nth-child(2){background:var(--laranja)}
+.dec-ops button:disabled{opacity:.6}
+.dec-fb{min-height:1.5em;margin:0;font-family:var(--poster);font-size:17px;text-align:center}
+.dec-fb.certo{color:var(--verde)}
+.dec-fb.errado{color:#b3264a}
+/* Fim de jogo e ranking */
+.j-card .fim-pts,.fim-pts{margin:0;font-family:var(--groovy);font-size:64px;line-height:1;color:var(--laranja);-webkit-text-stroke:2px var(--marrom);text-shadow:4px 4px 0 var(--marrom);text-align:center}
+.fim-pos{margin:0;font-size:17px;line-height:1.45;color:var(--marrom);text-align:center}
+.fim-pos b{font-family:var(--poster);font-weight:400}
+.rank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rank li{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:10px;padding:9px 12px;border-radius:14px;background:var(--papel);border:2px solid var(--marrom);font-size:16px}
+.rank li .p{font-family:var(--groovy);font-size:18px;color:var(--laranja);text-align:center}
+.rank li .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tinta)}
+.rank li .s{font-family:var(--poster);color:var(--marrom);font-variant-numeric:tabular-nums}
+.rank li:nth-child(1){background:var(--mostarda)}
+.rank li:nth-child(2){background:#f6d49a}
+.rank li:nth-child(3){background:#f6b08a}
+.rank li.eu{outline:3px solid var(--verde);outline-offset:1px}
+.rank-vazio{margin:0;padding:14px;border-radius:14px;background:var(--papel);border:2px dashed var(--marrom);text-align:center;color:var(--suave)}
+.rank-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rank-tabs button{padding:9px 6px;border-radius:999px;border:2.5px solid var(--marrom);background:var(--papel);color:var(--marrom);font-family:var(--poster);font-size:12px;letter-spacing:.04em;cursor:pointer}
+.rank-tabs button[aria-selected="true"]{background:var(--laranja);color:var(--papel)}
+.rank-nota{margin:0;font-size:12px;color:var(--suave);text-align:center}
+@media (prefers-reduced-motion:reduce){.carta,.prato,.braco,.lp,.lp-capa,.lp-disco{transition:none}}
 #fx{position:fixed;inset:0;width:100%;height:100%;z-index:30;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.btn.quiz,.panel,.splash::before,.s-mini{animation:none}}
 </style>
@@ -290,12 +437,16 @@ body.fechado{overflow:hidden}
 <div class="splash" id="splash" role="dialog" aria-label="Abrir convite">
   <div class="splash-in">
     <p class="s-top">Você está convidado para os<br>15 anos da</p>
-    <h2 class="s-name gold-text" id="splashNome">Manu</h2>
-    <div class="s-mini" aria-hidden="true"></div>
+    <div class="lp" aria-hidden="true">
+      <div class="lp-disco"></div>
+      <div class="lp-capa"><span class="lp-nome" id="splashNome">Manu</span><span class="lp-sub">15 anos · lado A</span></div>
+      <div class="lp-braco"><svg viewBox="0 0 120 260"><circle cx="86" cy="24" r="20" fill="#f0a531" stroke="#4a230f" stroke-width="4"/><circle cx="86" cy="24" r="7" fill="#4a230f"/><path d="M86 24 L78 150 L40 214" fill="none" stroke="#4a230f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M86 24 L78 150 L40 214" fill="none" stroke="#fbf2de" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="22" y="206" width="30" height="40" rx="5" transform="rotate(32 37 226)" fill="#e8692a" stroke="#4a230f" stroke-width="4"/></svg></div>
+    </div>
     <button class="s-btn" id="abrir" type="button">Toque para abrir</button>
     <p class="s-note">Com música! Aumente o volume</p>
   </div>
 </div>
+<div class="ondas-tela" id="ondasTela" hidden aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 <canvas id="sky" aria-hidden="true"></canvas>
 <canvas id="fx" aria-hidden="true"></canvas>
 <div class="toast" id="toast" hidden role="status" aria-live="assertive"></div>
@@ -306,11 +457,20 @@ body.fechado{overflow:hidden}
     <h1 class="name gold-text" id="nome">Manu</h1>
   </section>
 
-  <div class="vinyl" id="vinil" aria-hidden="true">
-    <div class="disc"><div class="label" id="selo"><span><span class="ln" id="seloNome">Manu</span><br><span class="ld" id="seloData">15 ANOS</span></span></div></div>
-    <div class="shine"></div>
+  <div class="toca">
+    <div class="vinyl" id="vinil" aria-hidden="true">
+      <div class="prato" id="prato">
+        <div class="disc"><div class="label" id="selo"><span><span class="ln" id="seloNome">Manu</span><br><span class="ld" id="seloData">15 ANOS</span></span></div></div>
+        <div class="shine"></div>
+      </div>
+    </div>
+    <div class="braco" id="braco" aria-hidden="true"><svg viewBox="0 0 120 260"><circle cx="86" cy="24" r="20" fill="#f0a531" stroke="#4a230f" stroke-width="4"/><circle cx="86" cy="24" r="7" fill="#4a230f"/><path d="M86 24 L78 150 L40 214" fill="none" stroke="#4a230f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M86 24 L78 150 L40 214" fill="none" stroke="#fbf2de" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="22" y="206" width="30" height="40" rx="5" transform="rotate(32 37 226)" fill="#e8692a" stroke="#4a230f" stroke-width="4"/></svg></div>
   </div>
   <p class="giro"><b>Gire o disco</b> com o dedo e mexa na música</p>
+  <p class="agora" aria-live="polite">Tocando: <b id="agoraNome">Disco Dourado</b><span id="agoraEstilo"> · Disco · anos 70</span></p>
+  <div class="capas" id="capas" role="group" aria-label="Escolha o disco">
+    <p class="capas-tit">Troque o disco</p>
+  </div>
 
   <div class="title-row">
     <span class="line"></span><h2 class="gold-text" id="titulo">15 ANOS</h2><span class="line r"></span>
@@ -341,6 +501,10 @@ body.fechado{overflow:hidden}
     <button class="btn quiz" id="abrirQuiz" type="button">
       <svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
       Quiz: a música da Manu
+    </button>
+    <button class="btn" id="bJogos" type="button">
+      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10.5v4M5 12.5h4"/><circle cx="15.5" cy="11.5" r="1"/><circle cx="17.5" cy="14" r="1"/></svg>
+      Jogos
     </button>
     <button class="btn" id="bTrajes" type="button">
       <svg viewBox="0 0 24 24"><path d="M8 3l4 3 4-3 5 4-3 4-2-1v11H8V10l-2 1-3-4z"/></svg>
@@ -473,157 +637,277 @@ body.fechado{overflow:hidden}
   </div>
 </div>
 
+<section class="jogos" id="jogos" hidden aria-label="Jogos"><div class="j-wrap" id="jWrap"></div></section>
+
 <button class="som" id="som" type="button" aria-label="Pausar música" hidden></button>
 
 <script>
-/* ---------- Trilha retrô original (gerada no navegador, sem direitos autorais) ----------
-   Groove disco/soul, 112 BPM, 8 compassos em loop:
-   Am7 | D9 | Gmaj7 | Cmaj7 | Fmaj7 | Bm7(b5) E7 | Am7 | Esus4 E7
-   Baixo em oitavas, bumbo "four on the floor", palmas no 2 e 4, chimbal no contratempo,
-   piano elétrico (FM), órgão suave e uma melodia de vibrafone na segunda metade. */
+/* ---------- Trilhas retrô originais (geradas no navegador, sem direitos autorais) ----------
+   4 faixas compostas para o convite, cada uma um loop de 8 compassos:
+   0 Disco Dourado  – disco/soul anos 70, 112 BPM
+   1 Twist na Praia – twist/surf anos 60, 152 BPM
+   2 Soul de Veludo – soul lenta anos 60, 72 BPM (sensação 12/8)
+   3 Funk da Vitrola – funk anos 70, 100 BPM */
 const Trilha = (() => {
-  const BPM = 112, BEAT = 60 / BPM, BAR = BEAT * 4, BARS = 8, SR = 22050;
-  const LOOP = BAR * BARS;
+  const SR = 22050;
   const mtof = n => 440 * Math.pow(2, (n - 69) / 12);
-  // acordes em notas MIDI (voicing do piano) + fundamental do baixo
-  const CH = [
-    { b: 45, v: [57, 60, 64, 67] },          // Am7
-    { b: 50, v: [54, 57, 60, 64] },          // D9 (F# A C E)
-    { b: 43, v: [54, 59, 62, 66] },          // Gmaj7 (F# B D F#)
-    { b: 48, v: [55, 59, 60, 64] },          // Cmaj7 (G B C E)
-    { b: 41, v: [57, 60, 64, 65] },          // Fmaj7 (A C E F)
-    { b: 47, v: [57, 62, 65, 69], b2: 40, v2: [56, 59, 62, 64] }, // Bm7b5 | E7
-    { b: 45, v: [57, 60, 64, 67] },          // Am7
-    { b: 40, v: [57, 59, 62, 64], b2: 40, v2: [56, 59, 62, 64] }  // Esus4 | E7
-  ];
-  // melodia original de vibrafone (compassos 5–8): [compasso, tempo, nota, duração em tempos]
-  const MEL = [
-    [4,0,76,1],[4,1,74,.5],[4,1.5,72,.5],[4,2,69,1.5],[4,3.5,72,.5],
-    [5,0,74,1],[5,1,72,.5],[5,1.5,71,.5],[5,2,68,2],
-    [6,0,69,.5],[6,.5,72,.5],[6,1,76,1],[6,2,79,1],[6,3,76,1],
-    [7,0,74,1.5],[7,1.5,72,.5],[7,2,71,1],[7,3,68,1]
+  const MUSICAS = [
+    { id: "disco", nome: "Disco Dourado", estilo: "Disco · anos 70", cores: ["#f0a531", "#e8692a", "#dc5f7f"] },
+    { id: "twist", nome: "Twist na Praia", estilo: "Twist · anos 60", cores: ["#7cc6c0", "#2c7c70", "#f3b7c5"] },
+    { id: "soul",  nome: "Soul de Veludo", estilo: "Soul · anos 60", cores: ["#f3b7c5", "#dc5f7f", "#7a3e1d"] },
+    { id: "funk",  nome: "Funk da Vitrola", estilo: "Funk · anos 70", cores: ["#cfe07a", "#6b8e23", "#f0a531"] }
   ];
 
-  function noiseBuf(ctx) {
-    const b = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = b.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    return b;
+  function kit(ctx, master) {
+    const nb = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), nd = nb.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    const env = (g, t, peak, att, dec) => {
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + att + dec);
+    };
+    const hit = (t, type, freq, q, vol, dec, dest = master) => {
+      const s = ctx.createBufferSource(); s.buffer = nb;
+      const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+      const g = ctx.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dec);
+      s.connect(f); f.connect(g); g.connect(dest); s.start(t, Math.random() * 0.5); s.stop(t + dec + 0.02);
+    };
+    // eco de mola (efeito de amplificador de guitarra anos 60)
+    const mola = ctx.createDelay(1); mola.delayTime.value = 0.11;
+    const fb = ctx.createGain(); fb.gain.value = 0.32;
+    const molaOut = ctx.createGain(); molaOut.gain.value = 0.45;
+    const molaF = ctx.createBiquadFilter(); molaF.type = "lowpass"; molaF.frequency.value = 2600;
+    mola.connect(molaF); molaF.connect(fb); fb.connect(mola); molaF.connect(molaOut); molaOut.connect(master);
+
+    return {
+      kick(t, v = 0.95) {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.13);
+        g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
+        o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.35);
+      },
+      snare(t, v = 0.4) {
+        hit(t, "bandpass", 1900, 0.7, v, 0.16);
+        const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 190;
+        g.gain.setValueAtTime(v * 0.6, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+        o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.1);
+      },
+      clap(t) { for (let i = 0; i < 3; i++) hit(t + i * 0.011, "bandpass", 1400, 0.9, 0.42, 0.09 + i * 0.03); },
+      hat(t, open, v = 1) { hit(t, "highpass", 7500, 0.7, (open ? 0.12 : 0.07) * v, open ? 0.2 : 0.045); },
+      rim(t, v = 0.25) { hit(t, "bandpass", 3200, 4, v, 0.03); },
+      bass(t, n, dur, v = 0.32, wave = "sawtooth", cut = 1100) {
+        const o = ctx.createOscillator(); o.type = wave; o.frequency.value = mtof(n);
+        const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.Q.value = 6;
+        f.frequency.setValueAtTime(cut, t); f.frequency.exponentialRampToValueAtTime(240, t + dur * 0.9);
+        const g = ctx.createGain(); env(g, t, v, 0.008, dur * 0.9);
+        o.connect(f); f.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
+      },
+      ep(t, n, dur, vol) { // piano elétrico em FM
+        const fr = mtof(n);
+        const c = ctx.createOscillator(); c.frequency.value = fr;
+        const m = ctx.createOscillator(); m.frequency.value = fr;
+        const mg = ctx.createGain(); mg.gain.setValueAtTime(fr * 1.4, t); mg.gain.exponentialRampToValueAtTime(fr * 0.08, t + 0.35);
+        m.connect(mg); mg.connect(c.frequency);
+        const g = ctx.createGain(); env(g, t, vol, 0.006, dur);
+        c.connect(g); g.connect(master); c.start(t); m.start(t); c.stop(t + dur + 0.05); m.stop(t + dur + 0.05);
+      },
+      organ(t, n, dur, vol = 0.022) {
+        const g = ctx.createGain(); g.gain.value = 0;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.06);
+        g.gain.setValueAtTime(vol, t + dur - 0.08); g.gain.linearRampToValueAtTime(0, t + dur);
+        const trem = ctx.createOscillator(); trem.frequency.value = 5.8;
+        const tg = ctx.createGain(); tg.gain.value = vol * 0.35; trem.connect(tg); tg.connect(g.gain);
+        [[1, 1], [2, 0.5], [3, 0.25]].forEach(([h, a]) => {
+          const o = ctx.createOscillator(); o.frequency.value = mtof(n) * h;
+          const og = ctx.createGain(); og.gain.value = a; o.connect(og); og.connect(g); o.start(t); o.stop(t + dur);
+        });
+        g.connect(master); trem.start(t); trem.stop(t + dur);
+      },
+      vibe(t, n, dur, vol = 0.17) {
+        const fr = mtof(n), g = ctx.createGain(); env(g, t, vol, 0.005, Math.max(dur, 0.6) + 0.9);
+        const trem = ctx.createOscillator(); trem.frequency.value = 5;
+        const tg = ctx.createGain(); tg.gain.value = vol * 0.3; trem.connect(tg); tg.connect(g.gain);
+        [[1, 1], [4, 0.12], [10, 0.03]].forEach(([h, a]) => {
+          const o = ctx.createOscillator(); o.frequency.value = fr * h;
+          const og = ctx.createGain(); og.gain.value = a; o.connect(og); og.connect(g); o.start(t); o.stop(t + dur + 1.6);
+        });
+        g.connect(master); trem.start(t); trem.stop(t + dur + 1.6);
+      },
+      guitar(t, n, dur, vol = 0.12, eco = true) { // guitarra dedilhada com eco de mola
+        const fr = mtof(n);
+        const a = ctx.createOscillator(); a.type = "sawtooth"; a.frequency.value = fr;
+        const b = ctx.createOscillator(); b.type = "square"; b.frequency.value = fr * 1.003;
+        const vib = ctx.createOscillator(); vib.frequency.value = 5.5;
+        const vg = ctx.createGain(); vg.gain.value = fr * 0.006; vib.connect(vg); vg.connect(a.frequency); vg.connect(b.frequency);
+        const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.Q.value = 3;
+        f.frequency.setValueAtTime(3200, t); f.frequency.exponentialRampToValueAtTime(900, t + dur);
+        const g = ctx.createGain(); env(g, t, vol, 0.004, dur);
+        const mb = ctx.createGain(); mb.gain.value = 0.5;
+        a.connect(f); b.connect(mb); mb.connect(f); f.connect(g); g.connect(master);
+        if (eco) g.connect(mola);
+        [a, b, vib].forEach(o => { o.start(t); o.stop(t + dur + 0.05); });
+      },
+      clav(t, n, vol = 0.06) {
+        const o = ctx.createOscillator(); o.type = "square"; o.frequency.value = mtof(n);
+        const f = ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 1300; f.Q.value = 2.2;
+        const g = ctx.createGain(); env(g, t, vol, 0.002, 0.09);
+        o.connect(f); f.connect(g); g.connect(master); o.start(t); o.stop(t + 0.12);
+      },
+      brass(t, n, dur, vol = 0.07) {
+        const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = mtof(n);
+        const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.Q.value = 1;
+        f.frequency.setValueAtTime(500, t); f.frequency.exponentialRampToValueAtTime(2600, t + 0.06); f.frequency.exponentialRampToValueAtTime(1200, t + dur);
+        const g = ctx.createGain(); env(g, t, vol, 0.03, dur);
+        o.connect(f); f.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05);
+      }
+    };
   }
 
-  async function render() {
-    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-    const total = LOOP + BAR; // um compasso extra para as caudas, que voltam para o início
-    const ctx = new OAC(1, Math.ceil(total * SR), SR);
-    const noise = noiseBuf(ctx);
-    const comp = ctx.createDynamicsCompressor();
-    comp.threshold.value = -16; comp.ratio.value = 4; comp.attack.value = 0.005; comp.release.value = 0.12;
-    const master = ctx.createGain(); master.gain.value = 0.9;
-    master.connect(comp); comp.connect(ctx.destination);
-
-    const kick = t => {
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.13);
-      g.gain.setValueAtTime(0.95, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
-      o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.35);
-    };
-    const hit = (t, type, freq, q, vol, dec) => {
-      const s = ctx.createBufferSource(); s.buffer = noise;
-      const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dec);
-      s.connect(f); f.connect(g); g.connect(master);
-      s.start(t, Math.random() * 0.5); s.stop(t + dec + 0.02);
-    };
-    const clap = t => { for (let i = 0; i < 3; i++) hit(t + i * 0.011, "bandpass", 1400, 0.9, 0.42, 0.09 + i * 0.03); };
-    const hat = (t, open) => hit(t, "highpass", 7500, 0.7, open ? 0.12 : 0.07, open ? 0.2 : 0.045);
-
-    const bass = (t, n, dur) => {
-      const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = mtof(n);
-      const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.Q.value = 6;
-      f.frequency.setValueAtTime(1100, t); f.frequency.exponentialRampToValueAtTime(260, t + dur * 0.9);
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32, t + 0.008);
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.95);
-      o.connect(f); f.connect(g); g.connect(master); o.start(t); o.stop(t + dur);
-    };
-    // piano elétrico em FM
-    const ep = (t, n, dur, vol) => {
-      const fr = mtof(n);
-      const c = ctx.createOscillator(); c.frequency.value = fr;
-      const m = ctx.createOscillator(); m.frequency.value = fr;
-      const mg = ctx.createGain();
-      mg.gain.setValueAtTime(fr * 1.4, t); mg.gain.exponentialRampToValueAtTime(fr * 0.08, t + 0.35);
-      m.connect(mg); mg.connect(c.frequency);
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.006);
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      c.connect(g); g.connect(master);
-      c.start(t); m.start(t); c.stop(t + dur + 0.05); m.stop(t + dur + 0.05);
-    };
-    // órgão com tremolo (sabor anos 60)
-    const organ = (t, n, dur) => {
-      const g = ctx.createGain(); g.gain.value = 0;
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.022, t + 0.06);
-      g.gain.setValueAtTime(0.022, t + dur - 0.08); g.gain.linearRampToValueAtTime(0, t + dur);
-      const trem = ctx.createOscillator(); trem.frequency.value = 5.8;
-      const tg = ctx.createGain(); tg.gain.value = 0.008; trem.connect(tg); tg.connect(g.gain);
-      [[1, 1], [2, 0.5], [3, 0.25]].forEach(([h, a]) => {
-        const o = ctx.createOscillator(); o.frequency.value = mtof(n) * h;
-        const og = ctx.createGain(); og.gain.value = a;
-        o.connect(og); og.connect(g); o.start(t); o.stop(t + dur);
+  /* ---- composições ---- */
+  const COMP = [
+    // 0 Disco Dourado
+    { bpm: 112, compose(k, BEAT, BAR) {
+      const CH = [
+        { b: 45, v: [57, 60, 64, 67] }, { b: 50, v: [54, 57, 60, 64] }, { b: 43, v: [54, 59, 62, 66] }, { b: 48, v: [55, 59, 60, 64] },
+        { b: 41, v: [57, 60, 64, 65] }, { b: 47, v: [57, 62, 65, 69], b2: 40, v2: [56, 59, 62, 64] },
+        { b: 45, v: [57, 60, 64, 67] }, { b: 40, v: [57, 59, 62, 64], b2: 40, v2: [56, 59, 62, 64] }
+      ];
+      const MEL = [[4,0,76,1],[4,1,74,.5],[4,1.5,72,.5],[4,2,69,1.5],[4,3.5,72,.5],[5,0,74,1],[5,1,72,.5],[5,1.5,71,.5],[5,2,68,2],
+        [6,0,69,.5],[6,.5,72,.5],[6,1,76,1],[6,2,79,1],[6,3,76,1],[7,0,74,1.5],[7,1.5,72,.5],[7,2,71,1],[7,3,68,1]];
+      CH.forEach((c, bar) => {
+        const t0 = bar * BAR;
+        for (let b = 0; b < 4; b++) {
+          const tb = t0 + b * BEAT;
+          k.kick(tb); if (b === 1 || b === 3) k.clap(tb);
+          k.hat(tb + BEAT / 2, true); k.hat(tb, false); k.hat(tb + BEAT * .25, false); k.hat(tb + BEAT * .75, false);
+          const root = (c.b2 !== undefined && b >= 2) ? c.b2 : c.b;
+          k.bass(tb, root, BEAT / 2); k.bass(tb + BEAT / 2, root + 12, BEAT / 2);
+        }
+        const v1 = c.v, v2 = c.v2 || c.v;
+        v1.forEach(n => k.ep(t0, n, .9, .05)); v1.forEach(n => k.ep(t0 + BEAT * 1.5, n, .25, .045));
+        v2.forEach(n => k.ep(t0 + BEAT * 2, n, .6, .04)); v2.forEach(n => k.ep(t0 + BEAT * 3.5, n, .25, .045));
+        if (c.v2) { v1.forEach(n => k.organ(t0, n - 12, BAR / 2)); v2.forEach(n => k.organ(t0 + BAR / 2, n - 12, BAR / 2)); }
+        else v1.forEach(n => k.organ(t0, n - 12, BAR));
       });
-      g.connect(master); trem.start(t); trem.stop(t + dur);
-    };
-    const vibe = (t, n, dur) => {
-      const fr = mtof(n), g = ctx.createGain();
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.17, t + 0.005);
-      g.gain.exponentialRampToValueAtTime(0.001, t + Math.max(dur, 0.6) + 0.9);
-      const trem = ctx.createOscillator(); trem.frequency.value = 5;
-      const tg = ctx.createGain(); tg.gain.value = 0.05; trem.connect(tg); tg.connect(g.gain);
-      [[1, 1], [4, 0.12], [10, 0.03]].forEach(([h, a]) => {
-        const o = ctx.createOscillator(); o.frequency.value = fr * h;
-        const og = ctx.createGain(); og.gain.value = a;
-        o.connect(og); og.connect(g); o.start(t); o.stop(t + dur + 1.6);
+      MEL.forEach(([bar, beat, n, d]) => k.vibe(bar * BAR + beat * BEAT, n, d * BEAT));
+    }},
+    // 1 Twist na Praia
+    { bpm: 152, compose(k, BEAT, BAR) {
+      const E = { r: 40, v: [52, 56, 59, 64] }, A = { r: 45, v: [57, 61, 64, 69] }, B7 = { r: 47, v: [59, 63, 66, 69] };
+      const CH = [E, E, A, A, B7, A, E, B7];
+      const BOOGIE = [0, 4, 7, 9, 10, 9, 7, 4];
+      const MEL = [
+        [0,0,64,.5],[0,.5,68,.5],[0,1,71,1],[0,2,68,.5],[0,2.5,66,.5],[0,3,64,1],
+        [1,0,71,.5],[1,.5,73,.5],[1,1,71,.5],[1,1.5,68,.5],[1,2,66,1.5],
+        [2,0,69,.5],[2,.5,73,.5],[2,1,76,1],[2,2,73,.5],[2,2.5,71,.5],[2,3,69,1],
+        [3,0,76,1],[3,1,73,1],[3,2,71,2],
+        [4,0,71,.5],[4,.5,75,.5],[4,1,78,1],[4,2,75,.5],[4,2.5,73,.5],[4,3,71,1],
+        [5,0,73,.5],[5,.5,69,.5],[5,1,73,.5],[5,1.5,76,.5],[5,2,73,2],
+        [6,0,68,.5],[6,.5,71,.5],[6,1,76,1],[6,2,71,.5],[6,2.5,68,.5],[6,3,64,1],
+        [7,0,66,1],[7,1,71,1],[7,2,75,1],[7,3,71,1]
+      ];
+      CH.forEach((c, bar) => {
+        const t0 = bar * BAR;
+        for (let b = 0; b < 4; b++) {
+          const tb = t0 + b * BEAT;
+          if (b === 0 || b === 2) k.kick(tb, .8);
+          if (b === 1) k.kick(tb + BEAT / 2, .5);
+          if (b === 1 || b === 3) k.snare(tb, .38);
+          k.hat(tb, false, 1.3); k.hat(tb + BEAT / 2, false, .9);
+          c.v.forEach(n => k.guitar(tb + BEAT / 2, n, .12, .035, false)); // palhetada no contratempo
+        }
+        BOOGIE.forEach((iv, i) => k.bass(t0 + i * BEAT / 2, c.r + iv, BEAT / 2, .3, "triangle", 900));
       });
-      g.connect(master); trem.start(t); trem.stop(t + dur + 1.6);
-    };
+      MEL.forEach(([bar, beat, n, d]) => k.guitar(bar * BAR + beat * BEAT, n, d * BEAT * .95 + .08, .11));
+    }},
+    // 2 Soul de Veludo
+    { bpm: 72, compose(k, BEAT, BAR) {
+      const C = { r: 36, v: [60, 64, 67, 72] }, Am = { r: 45, v: [57, 60, 64, 69] }, F = { r: 41, v: [57, 60, 65, 69] },
+            G = { r: 43, v: [59, 62, 67, 71] }, Dm7 = { r: 38, v: [60, 62, 65, 69] }, G7 = { r: 43, v: [59, 62, 65, 67] };
+      const BARS = [[C], [Am], [F], [G], [C], [Am], [Dm7, G7], [C]];
+      const T = BEAT / 3; // tercina
+      BARS.forEach((chs, bar) => {
+        const t0 = bar * BAR;
+        chs.forEach((c, half) => {
+          const th = t0 + half * BAR / 2, len = BAR / chs.length;
+          c.v.forEach(n => k.organ(th, n - 12, len, .026));
+          k.bass(th, c.r, BEAT * 1.4, .3, "triangle", 700);
+          if (chs.length === 1) k.bass(th + BEAT * 2, c.r + 7, BEAT * 1.4, .26, "triangle", 700);
+          const beats = chs.length === 1 ? 4 : 2;
+          for (let b = 0; b < beats; b++) for (let s = 0; s < 3; s++) {
+            const n = c.v[(s + (b % 2)) % c.v.length] + 12 * (s === 2 ? 0 : 0);
+            k.ep(th + b * BEAT + s * T, n, .35, s === 0 ? .045 : .03);
+          }
+        });
+        for (let b = 0; b < 4; b++) {
+          const tb = t0 + b * BEAT;
+          if (b === 0 || b === 2) k.kick(tb, .6);
+          if (b === 2) k.kick(tb + 2 * T, .35);
+          if (b === 1 || b === 3) k.snare(tb, .26);
+          for (let s = 0; s < 3; s++) k.hat(tb + s * T, false, s === 0 ? 1 : .6);
+        }
+      });
+      const MEL = [[0,0,67,4],[1,0,69,4],[2,0,69,4],[3,0,71,4],
+        [4,0,72,1],[4,1,76,1],[4,2,79,1.5],[4,3.5,76,.5],[5,0,76,1.5],[5,1.5,74,.5],[5,2,72,2],
+        [6,0,74,1],[6,1,77,1],[6,2,79,1],[6,3,77,1],[7,0,76,1],[7,1,74,1],[7,2,72,2]];
+      MEL.forEach(([bar, beat, n, d]) => k.vibe(bar * BAR + beat * BEAT, n, d * BEAT, bar < 4 ? .09 : .16));
+    }},
+    // 3 Funk da Vitrola
+    { bpm: 100, compose(k, BEAT, BAR) {
+      const Dm7 = { r: 38, v: [62, 65, 69, 72] }, G7 = { r: 43, v: [59, 62, 65, 67] },
+            Bb = { r: 46, v: [58, 62, 65, 69] }, A7 = { r: 45, v: [61, 64, 67, 69] };
+      const CH = [Dm7, Dm7, G7, G7, Dm7, Dm7, Bb, A7];
+      const S = BEAT / 4;
+      const BASS = [[0,0,.18],[3,12,.1],[6,0,.1],[8,0,.18],[10,10,.1],[11,12,.1],[14,7,.12]];
+      const CLAV = [2, 5, 7, 10, 13, 15];
+      CH.forEach((c, bar) => {
+        const t0 = bar * BAR;
+        BASS.forEach(([st, iv, d]) => k.bass(t0 + st * S, c.r + iv, d * 1.4, .34, "square", 1500));
+        CLAV.forEach(st => c.v.slice(0, 3).forEach(n => k.clav(t0 + st * S, n, .05)));
+        [0, 6, 8, 10].forEach(st => k.kick(t0 + st * S, st === 0 || st === 8 ? .9 : .6));
+        [4, 12].forEach(st => k.snare(t0 + st * S, .42));
+        [7, 15].forEach(st => k.snare(t0 + st * S, .08));
+        for (let st = 0; st < 16; st++) k.hat(t0 + st * S, st === 14, st % 2 ? .6 : 1.1);
+        if (bar === 1 || bar === 5) [62, 65, 69].forEach(n => { k.brass(t0 + 14 * S, n, S * 1.5); k.brass(t0 + BAR, n + 2, BEAT * .9); });
+        if (bar === 7) [61, 64, 67].forEach(n => k.brass(t0 + 12 * S, n, BEAT));
+      });
+    }}
+  ];
 
-    for (let bar = 0; bar < BARS; bar++) {
-      const t0 = bar * BAR, c = CH[bar];
-      for (let b = 0; b < 4; b++) {
-        const tb = t0 + b * BEAT;
-        kick(tb);
-        if (b === 1 || b === 3) clap(tb);
-        hat(tb + BEAT / 2, true);
-        hat(tb, false); hat(tb + BEAT * 0.25, false); hat(tb + BEAT * 0.75, false);
-        // baixo em oitavas (colcheias)
-        const half = c.b2 !== undefined && b >= 2;
-        const root = half ? c.b2 : c.b;
-        bass(tb, root, BEAT / 2);
-        bass(tb + BEAT / 2, root + 12, BEAT / 2);
-      }
-      // piano elétrico: ataque no 1 e "stabs" no contratempo do 2 e do 4
-      const v1 = c.v, v2 = c.v2 || c.v;
-      v1.forEach(n => ep(t0, n, 0.9, 0.05));
-      v1.forEach(n => ep(t0 + BEAT * 1.5, n, 0.25, 0.045));
-      v2.forEach(n => ep(t0 + BEAT * 2, n, 0.6, 0.04));
-      v2.forEach(n => ep(t0 + BEAT * 3.5, n, 0.25, 0.045));
-      // órgão sustentado
-      if (c.v2) { v1.forEach(n => organ(t0, n - 12, BAR / 2)); v2.forEach(n => organ(t0 + BAR / 2, n - 12, BAR / 2)); }
-      else v1.forEach(n => organ(t0, n - 12, BAR));
+  const cache = new Map();
+  async function render(i) {
+    if (cache.has(i)) return cache.get(i);
+    const job = (async () => {
+      const C = COMP[i], BEAT = 60 / C.bpm, BAR = BEAT * 4, LOOP = BAR * 8;
+      const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      const ctx = new OAC(1, Math.ceil((LOOP + BAR) * SR), SR);
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -16; comp.ratio.value = 4; comp.attack.value = 0.005; comp.release.value = 0.12;
+      const master = ctx.createGain(); master.gain.value = 0.9; master.connect(comp); comp.connect(ctx.destination);
+      C.compose(kit(ctx, master), BEAT, BAR);
+      const out = await ctx.startRendering();
+      const d = out.getChannelData(0), L = Math.round(LOOP * SR), pcm = new Float32Array(L);
+      for (let j = 0; j < L; j++) pcm[j] = d[j];
+      for (let j = L; j < d.length; j++) pcm[j - L] += d[j]; // caudas voltam ao início: emenda sem clique
+      let peak = 0; for (let j = 0; j < L; j++) peak = Math.max(peak, Math.abs(pcm[j]));
+      const g = peak > 0 ? 0.89 / peak : 1; for (let j = 0; j < L; j++) pcm[j] *= g;
+      return { pcm, sampleRate: SR, seconds: LOOP };
+    })();
+    cache.set(i, job);
+    job.catch(() => cache.delete(i));
+    return job;
+  }
+
+  // chiado de agulha no vinil
+  function chiado(ctx, seg = 1.4) {
+    const n = Math.round(ctx.sampleRate * seg), b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
+    let lp = 0;
+    for (let i = 0; i < n; i++) {
+      lp = lp * 0.9 + (Math.random() * 2 - 1) * 0.1;
+      d[i] = lp * 0.25 + (Math.random() < 0.0009 ? (Math.random() * 2 - 1) * 0.9 : 0);
     }
-    MEL.forEach(([bar, beat, n, d]) => vibe(bar * BAR + beat * BEAT, n, d * BEAT));
-
-    const out = await ctx.startRendering();
-    const d = out.getChannelData(0);
-    const L = Math.round(LOOP * SR);
-    const pcm = new Float32Array(L);
-    for (let i = 0; i < L; i++) pcm[i] = d[i];
-    for (let i = L; i < d.length; i++) pcm[i - L] += d[i]; // caudas voltam ao início: emenda sem clique
-    let peak = 0; for (let i = 0; i < L; i++) peak = Math.max(peak, Math.abs(pcm[i]));
-    const k = peak > 0 ? 0.89 / peak : 1;
-    for (let i = 0; i < L; i++) pcm[i] *= k;
-    return { pcm, sampleRate: SR, seconds: LOOP };
+    const f = Math.round(ctx.sampleRate * 0.25);
+    for (let i = 0; i < f; i++) { d[i] *= i / f; d[n - 1 - i] *= i / f; }
+    return b;
   }
 
   function wav(pcm, sr) {
@@ -637,9 +921,8 @@ const Trilha = (() => {
     return new Blob([buf], { type: "audio/wav" });
   }
 
-  return { render, wav };
+  return { MUSICAS, render, chiado, wav };
 })();
-
 
 /* =========================================================
    DADOS DA MANU — edite só este bloco
@@ -655,6 +938,13 @@ const CONFIG = {
     nome: "TOP FUN",
     endereco: "Av. Ampélio Gazzetta, 771 · Green Village · Nova Odessa - SP",
     mapa: "https://www.google.com/maps/search/?api=1&query=Top%20Fun%20Eventos%20Nova%20Odessa&query_place_id=ChIJkTSfhMuXyJQRZ6N4q4Dq8Dc"
+  },
+  ranking: {                    // Google Forms "Ranking Jogos Manu" + planilha publicada (CSV)
+    acao: "https://docs.google.com/forms/d/e/1FAIpQLSfmOEFmZmvKNxMdw33MhORCU26Z4qFyrfeo3f6371u06l2tzw/formResponse",
+    campoNome: "entry.413621328",
+    campoJogo: "entry.794701254",
+    campoPontos: "entry.1743684719",
+    csv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQa5dm5yHhrBBHTL7gVFo3spLT_634O1dlq61zQ6AqLS1lxgU9YZEAxQrenHiEmFHfTnCl9c9s8y5xv/pub?gid=1171754810&single=true&output=csv"
   },
   presenca: {                   // Google Forms que recebe as confirmações (a planilha fica com a família)
     acao: "https://docs.google.com/forms/d/e/1FAIpQLSeKCQeibC4Xs6NNOOrEvFXKejc6JaaTrVdtCgMLkXEN3NA6dA/formResponse",
@@ -876,38 +1166,81 @@ addEventListener("keydown",e=>{ if(e.key==="Escape" && !sheet.hidden) fechar(); 
 
 /* ---------- Controle do som (Web Audio, começa no toque de abertura) ---------- */
 const Som = (() => {
-  let ctx = null, gain = null, src = null, pcm = null, querTocar = false, mudo = false, rate = 1;
+  let ctx = null, gain = null, src = null, srcGain = null, faixa = 0, querTocar = false, mudo = false, rate = 1, trocando = false, pronto0 = false;
+  const buffers = {};
   const silencio = new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");
   silencio.loop = true;
-  Trilha.render().then(r => { pcm = r; if (querTocar) iniciar(); }).catch(() => {});
-  function iniciar(){
-    if (!ctx || !pcm || src) return;
-    const b = ctx.createBuffer(1, pcm.pcm.length, pcm.sampleRate);
-    b.getChannelData(0).set(pcm.pcm);
-    src = ctx.createBufferSource(); src.buffer = b; src.loop = true; src.playbackRate.value = rate;
-    src.connect(gain); src.start();
-    gain.gain.setTargetAtTime(mudo ? 0 : 0.85, ctx.currentTime, 0.4);
+  Trilha.render(0).then(() => { pronto0 = true; if (querTocar && !src) tocarFaixa(faixa, 0); }).catch(() => {});
+  const VOL = 0.85;
+  async function buffer(i){
+    if (buffers[i]) return buffers[i];
+    const r = await Trilha.render(i);
+    const b = ctx.createBuffer(1, r.pcm.length, r.sampleRate);
+    b.getChannelData(0).set(r.pcm);
+    return (buffers[i] = b);
   }
-  function abrir(){ // precisa rodar dentro do toque
+  function pararSrc(quando = 0){
+    if (!src) return;
+    const s = src, g = srcGain; src = null; srcGain = null;
+    try { g.gain.setTargetAtTime(0, ctx.currentTime, 0.05); s.stop(ctx.currentTime + quando + 0.3); } catch(e) {}
+  }
+  async function tocarFaixa(i, atraso = 0){
+    faixa = i;
+    if (!ctx) return;
+    const b = await buffer(i);
+    if (faixa !== i) return;
+    pararSrc();
+    const s = ctx.createBufferSource(); s.buffer = b; s.loop = true; s.playbackRate.value = 1; rate = 1;
+    const g = ctx.createGain(); g.gain.value = 0;
+    s.connect(g); g.connect(gain);
+    const t = ctx.currentTime + atraso;
+    s.start(t); g.gain.setTargetAtTime(1, t, 0.25);
+    src = s; srcGain = g;
+    // prepara as outras faixas em segundo plano
+    setTimeout(() => { [1, 2, 3].reduce((p, k) => p.then(() => Trilha.render(k)).catch(() => {}), Promise.resolve()); }, 2500);
+  }
+  function chiado(atraso = 0, dur = 1.4, vol = 0.5){
+    if (!ctx) return;
+    const s = ctx.createBufferSource(); s.buffer = Trilha.chiado(ctx, dur);
+    const g = ctx.createGain(); g.gain.value = vol; s.connect(g); g.connect(gain);
+    s.start(ctx.currentTime + atraso);
+  }
+  function abrir(atraso = 0){ // precisa rodar dentro do toque
     try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch(e) {}
     try { silencio.play().catch(() => {}); } catch(e) {}
     if (!ctx) {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return;
-      ctx = new AC(); gain = ctx.createGain(); gain.gain.value = 0; gain.connect(ctx.destination);
+      ctx = new AC(); gain = ctx.createGain(); gain.gain.value = mudo ? 0 : VOL; gain.connect(ctx.destination);
     }
     if (ctx.state !== "running") ctx.resume().catch(() => {});
-    querTocar = true; iniciar();
+    querTocar = true;
+    chiado(Math.max(0, atraso - 0.45), 1.6, 0.55);
+    if (pronto0 || faixa !== 0) tocarFaixa(faixa, atraso);
+  }
+  // disco freando + troca de faixa (usado pela vitrola)
+  async function trocar(i){
+    trocando = true;
+    if (src) {
+      src.playbackRate.cancelScheduledValues(ctx.currentTime);
+      src.playbackRate.setValueAtTime(src.playbackRate.value, ctx.currentTime);
+      src.playbackRate.exponentialRampToValueAtTime(0.06, ctx.currentTime + 0.7);
+      srcGain.gain.setTargetAtTime(0, ctx.currentTime + 0.35, 0.12);
+      pararSrc(0.7);
+    }
+    faixa = i;
+    return { comecar: async () => { trocando = false; if (ctx && querTocar) { chiado(0, 0.9, 0.45); await tocarFaixa(i, 0.35); } } };
   }
   function setRate(r, vol){
+    if (trocando) return;
     rate = r;
     if (src) src.playbackRate.setTargetAtTime(r, ctx.currentTime, 0.025);
-    if (gain && !mudo && vol !== undefined) gain.gain.setTargetAtTime(vol, ctx.currentTime, 0.05);
+    if (srcGain && vol !== undefined) srcGain.gain.setTargetAtTime(vol / VOL, ctx.currentTime, 0.05);
   }
   function alternar(){
     mudo = !mudo;
-    if (!ctx) { abrir(); }
-    if (ctx) { if (ctx.state !== "running") ctx.resume().catch(()=>{}); gain.gain.setTargetAtTime(mudo ? 0 : 0.85, ctx.currentTime, 0.15); }
+    if (!ctx) abrir();
+    if (ctx) { if (ctx.state !== "running") ctx.resume().catch(()=>{}); gain.gain.setTargetAtTime(mudo ? 0 : VOL, ctx.currentTime, 0.15); }
     return mudo;
   }
   document.addEventListener("visibilitychange", () => {
@@ -915,26 +1248,87 @@ const Som = (() => {
     if (document.hidden) ctx.suspend().catch(()=>{});
     else if (!mudo) ctx.resume().catch(()=>{});
   });
-  // se o navegador pausou o áudio, qualquer toque retoma
   document.addEventListener("pointerdown", () => { if (ctx && !mudo && ctx.state !== "running") ctx.resume().catch(()=>{}); });
-  return { abrir, setRate, alternar, get mudo(){ return mudo; }, get tocando(){ return !!(ctx && src && ctx.state === "running" && !mudo); }, get pronto(){ return !!pcm; } };
+  return { abrir, trocar, setRate, alternar,
+    get faixa(){ return faixa; }, get mudo(){ return mudo; },
+    get tocando(){ return !!(ctx && src && ctx.state === "running" && !mudo); }, get pronto(){ return pronto0; } };
 })();
 
-/* ---------- Tela de abertura + botão de som ---------- */
+/* ---------- Abertura animada: vinil sai da capa, agulha desce, ondas revelam o convite ---------- */
 const icSom = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 const icMudo = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
 $("splashNome").textContent = CONFIG.nome;
 document.body.classList.add("fechado");
 const somBtn = $("som");
 const pintaSom = () => { somBtn.innerHTML = Som.mudo ? icMudo : icSom; somBtn.setAttribute("aria-label", Som.mudo ? "Tocar música" : "Pausar música"); };
-$("abrir").addEventListener("click", () => {
-  Som.abrir();
-  $("splash").classList.add("saiu");
-  document.body.classList.remove("fechado");
+const espera = ms => new Promise(r => setTimeout(r, ms));
+let abriu = false;
+$("abrir").addEventListener("click", async () => {
+  if (abriu) return; abriu = true;
+  const reduzir = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const sp = $("splash"), ondas = $("ondasTela");
+  $("abrir").disabled = true;
+  if (reduzir) {
+    Som.abrir(0.2);
+    sp.hidden = true; document.body.classList.remove("fechado"); somBtn.hidden = false; pintaSom(); return;
+  }
+  Som.abrir(1.2);                         // chiado da agulha ~0,75 s, música em 1,2 s
+  sp.classList.add("abrindo");
+  await espera(700);  sp.classList.add("agulha");
+  await espera(850);  ondas.hidden = false; ondas.className = "ondas-tela cobre";
+  await espera(800);
+  sp.hidden = true; document.body.classList.remove("fechado"); window.scrollTo(0, 0);
   somBtn.hidden = false; pintaSom();
-  setTimeout(() => { $("splash").hidden = true; }, 700);
+  ondas.className = "ondas-tela revela";
+  await espera(900);  ondas.hidden = true; ondas.className = "ondas-tela";
 });
 somBtn.addEventListener("click", () => { Som.alternar(); pintaSom(); });
+
+/* ---------- Vitrola: prateleira de discos e troca animada ---------- */
+const Vitrola = (() => {
+  const capas = $("capas"), prato = $("prato"), braco = $("braco"), selo = $("selo");
+  const ARTE = ["a-disco", "a-twist", "a-soul", "a-funk"];
+  const CURTO = ["Disco", "Twist", "Soul", "Funk"];
+  let atual = 0, ocupado = false;
+  const pinta = i => {
+    const m = Trilha.MUSICAS[i];
+    selo.style.background = `radial-gradient(circle, ${m.cores[0]} 0 38%, ${m.cores[1]} 38% 62%, ${m.cores[2]} 62%)`;
+    $("seloData").textContent = m.nome.toUpperCase();
+    $("agoraNome").textContent = m.nome; $("agoraEstilo").textContent = " · " + m.estilo;
+    capas.querySelectorAll(".capa").forEach((b, k) => b.setAttribute("aria-pressed", String(k === i)));
+  };
+  Trilha.MUSICAS.forEach((m, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "capa"; b.setAttribute("aria-pressed", "false");
+    b.setAttribute("aria-label", `Tocar ${m.nome}, ${m.estilo}`);
+    b.innerHTML = `<span class="arte ${ARTE[i]}" style="--c1:${m.cores[0]};--c2:${m.cores[1]};--c3:${m.cores[2]}"><b>${CURTO[i]}</b></span><span class="nome"></span>`;
+    b.querySelector(".nome").textContent = m.nome;
+    b.addEventListener("click", () => trocar(i));
+    capas.appendChild(b);
+  });
+  pinta(0);
+  async function trocar(i){
+    if (ocupado || i === atual) return;
+    ocupado = true; atual = i;
+    capas.querySelectorAll(".capa").forEach((b, k) => b.setAttribute("aria-pressed", String(k === i)));
+    $("agoraNome").textContent = "trocando o disco..."; $("agoraEstilo").textContent = "";
+    const t = await Som.trocar(i);
+    braco.classList.add("levantado");
+    await espera(380);
+    prato.classList.add("sai");
+    await espera(470);
+    pinta(i);
+    prato.classList.remove("sai"); prato.classList.add("entra");
+    prato.offsetHeight;
+    prato.classList.remove("entra");
+    await espera(480);
+    braco.classList.remove("levantado");
+    await espera(320);
+    t.comecar();
+    ocupado = false;
+  }
+  return { trocar, get atual(){ return atual; } };
+})();
 
 /* ---------- Disco girável ---------- */
 (() => {
@@ -993,6 +1387,397 @@ somBtn.addEventListener("click", () => { Som.alternar(); pintaSom(); });
   tabs.forEach(([t, p]) => $(t).addEventListener("click", () => {
     tabs.forEach(([t2, p2]) => { $(t2).setAttribute("aria-selected", String(t2 === t)); $(p2).hidden = t2 !== t; });
   }));
+})();
+
+/* ---------- Ranking online (Google Forms grava, planilha publicada em CSV é lida) ---------- */
+const NA_CLAUDE = /claude\.ai|claudeusercontent|anthropic/.test(location.hostname);
+const Ranking = (() => {
+  const R = CONFIG.ranking || {};
+  const online = !!(R.acao && R.campoNome && R.campoJogo && R.campoPontos && R.csv) && !NA_CLAUDE;
+  const KEY = "ranking-manu-local";
+  const lerLocal = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (_) { return []; } };
+  const salvarLocal = l => { try { localStorage.setItem(KEY, JSON.stringify(l.slice(-80))); } catch (_) {} };
+  const limpaNome = n => String(n || "").replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 20);
+  const chave = n => limpaNome(n).toLocaleLowerCase("pt-BR");
+  let cache = null, cacheT = 0;
+  function parseCSV(txt) {
+    const rows = []; let row = [], cur = "", q = false;
+    for (let i = 0; i < txt.length; i++) {
+      const c = txt[i];
+      if (q) { if (c === '"') { if (txt[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+      else if (c === '"') q = true;
+      else if (c === ",") { row.push(cur); cur = ""; }
+      else if (c === "\n" || c === "\r") { if (c === "\r" && txt[i + 1] === "\n") i++; row.push(cur); rows.push(row); row = []; cur = ""; }
+      else cur += c;
+    }
+    if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+    return rows;
+  }
+  async function baixar() {
+    if (!online) return [];
+    if (cache && Date.now() - cacheT < 15000) return cache;
+    const r = await fetch(R.csv + "&t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw new Error("csv " + r.status);
+    const linhas = parseCSV(await r.text());
+    const cab = (linhas.shift() || []).map(c => c.toLowerCase());
+    const iN = cab.findIndex(c => c.includes("nome")), iJ = cab.findIndex(c => c.includes("jogo")), iP = cab.findIndex(c => c.includes("ponto"));
+    if (iN < 0 || iJ < 0 || iP < 0) return (cache = []);
+    cache = linhas.map(l => ({ nome: limpaNome(l[iN]), jogo: String(l[iJ] || "").trim(), pontos: Math.round(Number(String(l[iP] || "").replace(",", "."))) }))
+      .filter(x => x.nome && x.jogo && Number.isFinite(x.pontos) && x.pontos >= 0 && x.pontos <= 100000);
+    cacheT = Date.now();
+    return cache;
+  }
+  async function enviar(nome, jogo, pontos) {
+    nome = limpaNome(nome); pontos = Math.max(0, Math.round(pontos));
+    const l = lerLocal(); l.push({ nome, jogo, pontos, t: Date.now() }); salvarLocal(l);
+    cache = null;
+    if (!online) return false;
+    try {
+      const b = new URLSearchParams();
+      b.append(R.campoNome, nome); b.append(R.campoJogo, jogo); b.append(R.campoPontos, String(pontos));
+      await fetch(R.acao, { method: "POST", mode: "no-cors", body: b });
+      return true;
+    } catch (_) { return false; }
+  }
+  async function lista(jogo) {
+    let rem = [], erro = false;
+    try { rem = await baixar(); } catch (_) { erro = true; }
+    const todos = rem.filter(x => x.jogo === jogo).concat(lerLocal().filter(x => x.jogo === jogo));
+    const melhor = new Map();
+    todos.forEach(x => { const k = chave(x.nome); const a = melhor.get(k); if (!a || x.pontos > a.pontos) melhor.set(k, { nome: x.nome, pontos: x.pontos }); });
+    const arr = [...melhor.values()].sort((a, b) => b.pontos - a.pontos || a.nome.localeCompare(b.nome, "pt-BR"));
+    return { arr, online, erro };
+  }
+  return { enviar, lista, chave, limpaNome, get online() { return online; } };
+})();
+
+/* ---------- Jogos ---------- */
+const Jogos = (() => {
+  const box = $("jogos"), wrap = $("jWrap");
+  const NKEY = "jogador-manu";
+  let nome = (() => { try { return Ranking.limpaNome(localStorage.getItem(NKEY) || ""); } catch (_) { return ""; } })();
+  let ativo = null;
+
+  const el = (tag, props = {}, ...kids) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(props)) {
+      if (k === "class") e.className = v; else if (k === "text") e.textContent = v;
+      else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v);
+    }
+    kids.flat().forEach(c => c != null && e.appendChild(typeof c === "string" ? document.createTextNode(c) : c));
+    return e;
+  };
+  const limpar = () => { if (ativo && ativo.parar) ativo.parar(); ativo = null; wrap.replaceChildren(); box.scrollTop = 0; };
+  const topo = (titulo, voltar, ptsEl) => el("div", { class: "j-top" },
+    el("button", { class: "j-voltar", type: "button", text: "← Voltar", onclick: voltar }),
+    el("h2", { text: titulo }), ptsEl || null);
+
+  const LISTA = [
+    { id: "memoria", nome: "Memória Retrô", desc: "Ache os pares: vinil, fita cassete, globo de espelhos e mais. Menos jogadas e menos tempo valem mais pontos.", jogar: (a, api) => Memoria(a, api) },
+    { id: "pega", nome: "Pega o Disco", desc: "Arraste a vitrola e pegue os discos que caem. O dourado vale mais, e o disco riscado tira uma vida!", jogar: (a, api) => Pega(a, api) },
+    { id: "decadas", nome: "É dos 60 ou dos 70?", desc: "12 perguntas rápidas: descubra de que década é cada acontecimento antes do tempo acabar.", jogar: (a, api) => Decadas(a, api) }
+  ];
+  const jogoPorId = id => LISTA.find(j => j.id === id);
+
+  function abrir() { box.hidden = false; document.body.classList.add("fechado"); nome ? menu() : telaNome(); }
+  function fechar() { limpar(); box.hidden = true; document.body.classList.remove("fechado"); $("bJogos").focus(); }
+  addEventListener("keydown", e => { if (e.key === "Escape" && !box.hidden && !ativo) fechar(); });
+
+  function telaNome() {
+    limpar();
+    const inp = el("input", { id: "jNome", maxlength: "20", autocomplete: "nickname", placeholder: "Ex.: Tia Rosa" });
+    inp.value = nome;
+    const err = el("p", { class: "err", "aria-live": "polite" });
+    const ok = () => {
+      const n = Ranking.limpaNome(inp.value);
+      if (n.length < 2) { err.textContent = "Escreva seu nome (pelo menos 2 letras)."; inp.focus(); return; }
+      nome = n; try { localStorage.setItem(NKEY, n); } catch (_) {}
+      menu();
+    };
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") ok(); });
+    wrap.append(topo("Jogos da Manu", fechar),
+      el("div", { class: "j-card j-nome" },
+        el("h3", { text: "Quem vai jogar?" }),
+        el("label", { for: "jNome", text: "Seu nome para o ranking" }), inp, err,
+        el("p", { class: "j-dica", text: "Seu nome e seus pontos aparecem no ranking para todos os convidados." }),
+        el("button", { class: "j-btn", type: "button", text: "Continuar", onclick: ok })));
+    setTimeout(() => inp.focus(), 60);
+  }
+
+  function menu() {
+    limpar();
+    wrap.append(topo("Jogos da Manu", fechar),
+      el("p", { class: "j-ola" }, "Oi, ", el("b", { text: nome }), "! ", el("button", { class: "j-link", type: "button", text: "Trocar nome", onclick: telaNome })),
+      ...LISTA.map(j => el("article", { class: "j-card" },
+        el("h3", { text: j.nome }), el("p", { text: j.desc }),
+        el("div", { class: "j-acoes" },
+          el("button", { class: "j-btn", type: "button", text: "Jogar", onclick: () => iniciar(j.id) }),
+          el("button", { class: "j-btn sec", type: "button", text: "Ranking", onclick: () => telaRanking(j.id) })))));
+  }
+
+  function iniciar(id) {
+    limpar();
+    const j = jogoPorId(id);
+    const pts = el("span", { class: "j-pts", "aria-live": "off", text: "0" });
+    const area = el("div", { class: "j-area" });
+    wrap.append(topo(j.nome, menu, pts), area);
+    let acabou = false;
+    const api = {
+      pts: n => { pts.textContent = String(n); },
+      fim: (p, detalhe) => { if (acabou) return; acabou = true; setTimeout(() => telaFim(id, p, detalhe), 650); }
+    };
+    ativo = j.jogar(area, api);
+  }
+
+  function linhaRank(pos, item, eu) {
+    return el("li", { class: eu ? "eu" : "" },
+      el("span", { class: "p", text: pos + "º" }), el("span", { class: "n", text: item.nome }), el("span", { class: "s", text: String(item.pontos) }));
+  }
+  function desenhaRank(alvo, arr, destacar, limite = 10) {
+    alvo.replaceChildren();
+    if (!arr.length) { alvo.append(el("p", { class: "rank-vazio", text: "Ninguém jogou ainda. Seja o primeiro!" })); return; }
+    const ol = el("ol", { class: "rank" });
+    const k = destacar ? Ranking.chave(destacar) : null;
+    arr.slice(0, limite).forEach((it, i) => ol.append(linhaRank(i + 1, it, k && Ranking.chave(it.nome) === k)));
+    const meu = k ? arr.findIndex(it => Ranking.chave(it.nome) === k) : -1;
+    if (meu >= limite) ol.append(linhaRank(meu + 1, arr[meu], true));
+    alvo.append(ol);
+  }
+  const notaRank = r => r.online
+    ? (r.erro ? "Não consegui carregar o ranking geral agora. Mostrando os pontos deste aparelho." : "Ranking geral de todos os convidados. Pontos novos podem levar alguns minutos para aparecer para os outros.")
+    : "Ranking deste aparelho. O ranking geral aparece no link oficial do convite.";
+
+  async function telaFim(id, pontos, detalhe) {
+    limpar();
+    const j = jogoPorId(id);
+    const pos = el("p", { class: "fim-pos", text: "Salvando seus pontos..." });
+    const lista = el("div");
+    const nota = el("p", { class: "rank-nota" });
+    wrap.append(topo(j.nome, menu),
+      el("div", { class: "j-card" },
+        el("p", { class: "fim-pos", text: "Fim de jogo, " + nome + "!" }),
+        el("p", { class: "fim-pts", text: String(pontos) }),
+        el("p", { class: "fim-pos", text: "pontos" + (detalhe ? " · " + detalhe : "") })),
+      pos, lista, nota,
+      el("div", { class: "j-acoes" },
+        el("button", { class: "j-btn", type: "button", text: "Jogar de novo", onclick: () => iniciar(id) }),
+        el("button", { class: "j-btn sec", type: "button", text: "Outros jogos", onclick: menu })));
+    if (pontos >= 1) Fogos.start(2500);
+    await Ranking.enviar(nome, id, pontos);
+    const r = await Ranking.lista(id);
+    const k = Ranking.chave(nome);
+    const i = r.arr.findIndex(it => Ranking.chave(it.nome) === k);
+    pos.replaceChildren();
+    if (i < 0) pos.textContent = "Seus pontos foram registrados.";
+    else {
+      const recorde = r.arr[i].pontos > pontos ? ` Seu recorde é ${r.arr[i].pontos}.` : "";
+      pos.append("Você está em ", el("b", { text: `${i + 1}º lugar` }), ` de ${r.arr.length}.${recorde} `);
+      if (i === 0) pos.append(el("b", { text: "Você lidera o ranking!" }));
+      else pos.append("Na sua frente: ", el("b", { text: r.arr[i - 1].nome }), `, com ${r.arr[i - 1].pontos} pontos.`);
+    }
+    desenhaRank(lista, r.arr, nome);
+    nota.textContent = notaRank(r);
+  }
+
+  async function telaRanking(id) {
+    limpar();
+    const lista = el("div"), nota = el("p", { class: "rank-nota" });
+    const tabs = el("div", { class: "rank-tabs", role: "tablist" });
+    const carregar = async jid => {
+      tabs.querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.id === jid)));
+      lista.replaceChildren(el("p", { class: "rank-vazio", text: "Carregando..." }));
+      const r = await Ranking.lista(jid);
+      desenhaRank(lista, r.arr, nome); nota.textContent = notaRank(r);
+    };
+    LISTA.forEach(j => { const b = el("button", { type: "button", role: "tab", text: j.nome, onclick: () => carregar(j.id) }); b.dataset.id = j.id; tabs.append(b); });
+    wrap.append(topo("Ranking", menu), tabs, lista, nota,
+      el("button", { class: "j-btn", type: "button", text: "Jogar " + jogoPorId(id).nome, onclick: () => iniciar(id) }));
+    carregar(id);
+  }
+
+  /* ----- Memória Retrô ----- */
+  const ICONES = [
+    '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#171113"/><circle cx="24" cy="24" r="15" fill="none" stroke="#3a2e2f" stroke-width="1.5"/><circle cx="24" cy="24" r="8" fill="#e8692a"/><circle cx="24" cy="24" r="2" fill="#fbf2de"/></svg>',
+    '<svg viewBox="0 0 48 48"><rect x="3" y="10" width="42" height="28" rx="4" fill="#f0a531" stroke="#4a230f" stroke-width="2.5"/><rect x="10" y="16" width="28" height="11" rx="3" fill="#fbf2de" stroke="#4a230f" stroke-width="2"/><circle cx="17" cy="21.5" r="3.5" fill="#4a230f"/><circle cx="31" cy="21.5" r="3.5" fill="#4a230f"/><path d="M13 38l3-6h16l3 6" fill="#dc5f7f" stroke="#4a230f" stroke-width="2"/></svg>',
+    '<svg viewBox="0 0 48 48"><path d="M20 24c2-3 6-3 8 0" fill="none" stroke="#4a230f" stroke-width="3"/><circle cx="13" cy="25" r="9" fill="#7cc6c0" stroke="#4a230f" stroke-width="3.5"/><circle cx="35" cy="25" r="9" fill="#7cc6c0" stroke="#4a230f" stroke-width="3.5"/><path d="M4 22L1 17M44 22l3-5" stroke="#4a230f" stroke-width="3" stroke-linecap="round"/></svg>',
+    '<svg viewBox="0 0 48 48"><g fill="#dc5f7f" stroke="#4a230f" stroke-width="2"><ellipse cx="24" cy="11" rx="7" ry="9"/><ellipse cx="24" cy="37" rx="7" ry="9"/><ellipse cx="11" cy="24" rx="9" ry="7"/><ellipse cx="37" cy="24" rx="9" ry="7"/></g><circle cx="24" cy="24" r="7" fill="#f0a531" stroke="#4a230f" stroke-width="2"/></svg>',
+    '<svg viewBox="0 0 48 48"><path d="M24 2v8" stroke="#4a230f" stroke-width="2.5"/><circle cx="24" cy="28" r="17" fill="#d9dee3" stroke="#4a230f" stroke-width="2.5"/><path d="M8 22h32M7 30h34M10 38h28M24 11v34M15 13c-4 9-4 21 0 30M33 13c4 9 4 21 0 30" stroke="#8a96a1" stroke-width="1.5" fill="none"/><path d="M16 20l4 3-4 3z" fill="#fff"/></svg>',
+    '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19" fill="#fbf2de" stroke="#2c7c70" stroke-width="5"/><path d="M24 5v38M24 24L11 37M24 24l13 13" stroke="#2c7c70" stroke-width="5" stroke-linecap="round"/></svg>',
+    '<svg viewBox="0 0 48 48"><rect x="16" y="3" width="16" height="22" rx="8" fill="#e8692a" stroke="#4a230f" stroke-width="2.5"/><path d="M16 11h16M16 17h16" stroke="#4a230f" stroke-width="1.5"/><path d="M11 20c0 9 6 13 13 13s13-4 13-13M24 33v10M16 44h16" fill="none" stroke="#4a230f" stroke-width="3" stroke-linecap="round"/></svg>',
+    '<svg viewBox="0 0 48 48"><g stroke="#e8692a" stroke-width="3.5" stroke-linecap="round"><path d="M24 2v7M24 39v7M2 24h7M39 24h7M8 8l5 5M35 35l5 5M8 40l5-5M35 13l5-5"/></g><circle cx="24" cy="24" r="11" fill="#f0a531" stroke="#4a230f" stroke-width="2.5"/></svg>'
+  ];
+  function Memoria(area, api) {
+    const status = el("div", { class: "j-status" }), jog = el("span", { text: "Jogadas: 0" }), tmp = el("span", { text: "Tempo: 0s" });
+    status.append(jog, el("span", { text: "Ache os 8 pares" }), tmp);
+    const grade = el("div", { class: "mem" });
+    area.append(status, grade);
+    const cartas = [...ICONES.keys(), ...ICONES.keys()].sort(() => Math.random() - 0.5);
+    let primeira = null, trava = false, jogadas = 0, pares = 0, t0 = 0, timer = 0;
+    const seg = () => t0 ? Math.round((performance.now() - t0) / 1000) : 0;
+    cartas.forEach((ic, idx) => {
+      const b = el("button", { class: "carta", type: "button", "aria-label": `Carta ${idx + 1}` });
+      b.innerHTML = `<span class="verso"></span><span class="frente">${ICONES[ic]}</span>`;
+      b.dataset.ic = ic;
+      b.addEventListener("click", () => virar(b));
+      grade.append(b);
+    });
+    function virar(b) {
+      if (trava || b.classList.contains("virada") || b.classList.contains("ok")) return;
+      if (!t0) { t0 = performance.now(); timer = setInterval(() => { tmp.textContent = `Tempo: ${seg()}s`; }, 500); }
+      b.classList.add("virada");
+      if (!primeira) { primeira = b; return; }
+      jogadas++; jog.textContent = `Jogadas: ${jogadas}`;
+      const a = primeira; primeira = null;
+      if (a.dataset.ic === b.dataset.ic) {
+        a.classList.add("ok"); b.classList.add("ok"); pares++;
+        a.setAttribute("aria-label", "Par encontrado"); b.setAttribute("aria-label", "Par encontrado");
+        if (pares === ICONES.length) {
+          clearInterval(timer);
+          const s = seg(), p = Math.max(100, 1500 - jogadas * 20 - s * 8);
+          api.pts(p); api.fim(p, `${jogadas} jogadas em ${s}s`);
+        }
+      } else {
+        trava = true;
+        setTimeout(() => { a.classList.remove("virada"); b.classList.remove("virada"); trava = false; }, 850);
+      }
+    }
+    return { parar() { clearInterval(timer); } };
+  }
+
+  /* ----- Pega o Disco ----- */
+  function Pega(area, api) {
+    const status = el("div", { class: "j-status" }), vidasEl = el("span", { class: "vidas", text: "♥♥♥" }), pegosEl = el("span", { text: "Discos: 0" });
+    status.append(el("span", { text: "Vidas: " }, vidasEl), pegosEl);
+    const campo = el("div", { class: "pega" }), cv = el("canvas", { "aria-label": "Área do jogo Pega o Disco" });
+    const msg = el("div", { class: "pega-msg" },
+      el("div", {}, el("strong", { text: "Pega o Disco" }),
+        el("p", { text: "Arraste o dedo para mover a vitrola. Vinil preto: 10 pontos. Dourado: 30. Riscado: perde uma vida!" }),
+        el("button", { class: "j-btn", type: "button", text: "Começar", onclick: () => comecar() })));
+    campo.append(cv, msg); area.append(status, campo);
+    const x = cv.getContext("2d");
+    let W = 0, H = 0, d = 1, px = 0, alvo = 0, itens = [], textos = [], pts = 0, vidas = 3, pegos = 0, t = 0, prox = 0, rodando = false, raf = 0, last = 0, flash = 0;
+    const medir = () => { d = Math.min(devicePixelRatio || 1, 2); W = cv.width = campo.clientWidth * d; H = cv.height = campo.clientHeight * d; if (!px) px = alvo = W / 2; };
+    medir(); addEventListener("resize", medir);
+    const mover = e => { const r = campo.getBoundingClientRect(); alvo = Math.max(0, Math.min(W, (e.clientX - r.left) * d)); };
+    campo.addEventListener("pointerdown", e => { if (!rodando) return; mover(e); try { campo.setPointerCapture(e.pointerId); } catch (_) {} });
+    campo.addEventListener("pointermove", e => { if (rodando) mover(e); });
+    const tecla = e => { if (!rodando) return; if (e.key === "ArrowLeft") alvo = Math.max(0, alvo - W * 0.12); if (e.key === "ArrowRight") alvo = Math.min(W, alvo + W * 0.12); };
+    addEventListener("keydown", tecla);
+    function comecar() { msg.hidden = true; itens = []; textos = []; pts = 0; vidas = 3; pegos = 0; t = 0; prox = 400; rodando = true; last = performance.now(); api.pts(0); raf = requestAnimationFrame(loop); }
+    function disco(cx, cy, r, tipo, rot) {
+      x.save(); x.translate(cx, cy); x.rotate(rot);
+      x.fillStyle = tipo === "ouro" ? "#e0a82e" : tipo === "risco" ? "#6f6a68" : "#171113";
+      x.beginPath(); x.arc(0, 0, r, 0, 7); x.fill();
+      x.strokeStyle = tipo === "ouro" ? "rgba(255,240,180,.7)" : "rgba(255,255,255,.12)"; x.lineWidth = 1 * d;
+      for (let k = 0.45; k < 1; k += 0.18) { x.beginPath(); x.arc(0, 0, r * k, 0, 7); x.stroke(); }
+      x.fillStyle = tipo === "ouro" ? "#fbf2de" : tipo === "risco" ? "#9d9894" : "#e8692a";
+      x.beginPath(); x.arc(0, 0, r * 0.32, 0, 7); x.fill();
+      if (tipo === "risco") {
+        x.strokeStyle = "#dc2f4f"; x.lineWidth = 3.5 * d; x.lineCap = "round";
+        x.beginPath(); x.moveTo(-r * .8, -r * .5); x.lineTo(-r * .2, -r * .05); x.lineTo(-r * .35, r * .2); x.lineTo(r * .7, r * .6); x.stroke();
+      }
+      x.restore();
+    }
+    function vitrola(cx, y, w, h) {
+      x.fillStyle = "#7a3e1d"; x.strokeStyle = "#4a230f"; x.lineWidth = 3 * d;
+      x.beginPath(); x.roundRect ? x.roundRect(cx - w / 2, y, w, h, 10 * d) : x.rect(cx - w / 2, y, w, h); x.fill(); x.stroke();
+      x.fillStyle = "#171113"; x.beginPath(); x.ellipse(cx - w * 0.08, y + h * 0.1, w * 0.34, h * 0.35, 0, 0, 7); x.fill();
+      x.fillStyle = "#e8692a"; x.beginPath(); x.ellipse(cx - w * 0.08, y + h * 0.1, w * 0.1, h * 0.1, 0, 0, 7); x.fill();
+      x.fillStyle = "#f0a531"; x.beginPath(); x.arc(cx + w * 0.38, y + h * 0.55, h * 0.16, 0, 7); x.fill();
+    }
+    function loop(now) {
+      const dt = Math.min(40, now - last); last = now; t += dt;
+      const nivel = Math.min(1, t / 60000);
+      const vel = H * (0.00032 + 0.00055 * nivel);
+      prox -= dt;
+      if (prox <= 0) {
+        const r = Math.random(), tipo = r < 0.12 ? "ouro" : r < 0.12 + (0.14 + 0.12 * nivel) ? "risco" : "normal";
+        const rad = W * 0.055;
+        itens.push({ x: rad + Math.random() * (W - 2 * rad), y: -rad, r: rad, tipo, rot: 0, v: vel * (0.85 + Math.random() * 0.35) });
+        prox = 900 - 480 * nivel;
+      }
+      px += (alvo - px) * Math.min(1, dt / 70);
+      const pw = W * 0.26, ph = H * 0.075, py = H - ph - 10 * d;
+      x.clearRect(0, 0, W, H);
+      if (flash > 0) { x.fillStyle = `rgba(220,47,79,${flash / 400 * 0.3})`; x.fillRect(0, 0, W, H); flash -= dt; }
+      itens = itens.filter(it => {
+        it.y += it.v * dt; it.rot += dt * 0.004;
+        const pegou = it.y + it.r >= py && it.y - it.r <= py + ph * 0.6 && Math.abs(it.x - px) <= pw / 2 + it.r * 0.3;
+        if (pegou) {
+          if (it.tipo === "risco") { vidas--; flash = 400; textos.push({ x: it.x, y: py, s: "-1 vida", c: "#dc2f4f", v: 700 }); }
+          else { const g = it.tipo === "ouro" ? 30 : 10; pts += g; pegos++; textos.push({ x: it.x, y: py, s: "+" + g, c: it.tipo === "ouro" ? "#b8860b" : "#2c7c70", v: 700 }); }
+          api.pts(pts); vidasEl.textContent = "♥".repeat(Math.max(0, vidas)) || "–"; pegosEl.textContent = `Discos: ${pegos}`;
+          return false;
+        }
+        if (it.y - it.r > H) return false;
+        disco(it.x, it.y, it.r, it.tipo, it.rot);
+        return true;
+      });
+      vitrola(px, py, pw, ph);
+      textos = textos.filter(tx => { tx.v -= dt; tx.y -= dt * 0.06 * d; x.globalAlpha = Math.max(0, tx.v / 700); x.fillStyle = tx.c; x.font = `${22 * d}px Righteous, sans-serif`; x.textAlign = "center"; x.fillText(tx.s, tx.x, tx.y); x.globalAlpha = 1; return tx.v > 0; });
+      if (vidas <= 0) { rodando = false; api.fim(pts, `${pegos} discos pegos`); return; }
+      raf = requestAnimationFrame(loop);
+    }
+    return { parar() { rodando = false; cancelAnimationFrame(raf); removeEventListener("resize", medir); removeEventListener("keydown", tecla); } };
+  }
+
+  /* ----- É dos 60 ou dos 70? ----- */
+  const FATOS = [
+    ["O homem pisa na Lua pela primeira vez", 1969], ["Brasília é inaugurada como nova capital do Brasil", 1960],
+    ["Os Beatles se apresentam no programa de Ed Sullivan, nos EUA", 1964], ["Estreia o programa Jovem Guarda na TV Record", 1965],
+    ["Acontece o festival de Woodstock", 1969], ["Sai o disco \"Tropicália ou Panis et Circencis\"", 1968],
+    ["É formada a banda Os Mutantes", 1966], ["Iuri Gagarin é o primeiro ser humano a ir ao espaço", 1961],
+    ["Martin Luther King faz o discurso \"Eu tenho um sonho\"", 1963], ["A modelo Twiggy vira ícone da moda", 1966],
+    ["Tom Jobim e Vinicius compõem \"Garota de Ipanema\"", 1962], ["O Brasil é bicampeão da Copa do Mundo, no Chile", 1962],
+    ["O Brasil é tricampeão da Copa do Mundo, no México", 1970], ["Estreia o filme \"Os Embalos de Sábado à Noite\"", 1977],
+    ["A novela \"Dancin' Days\" leva a discoteca para a TV brasileira", 1978], ["Estreia o primeiro filme de \"Star Wars\" nos cinemas", 1977],
+    ["O videogame Atari 2600 chega às lojas", 1977], ["O ABBA vence o festival Eurovision com \"Waterloo\"", 1974],
+    ["Secos & Molhados lança seu primeiro disco", 1973], ["A Sony lança o primeiro Walkman", 1979],
+    ["É lançado o fliperama Pong", 1972], ["O avião Concorde começa a fazer voos comerciais", 1976],
+    ["As Frenéticas lançam seu primeiro disco", 1977], ["Morre Elvis Presley, o Rei do Rock", 1977]
+  ];
+  function Decadas(area, api) {
+    const N = 12, TEMPO = 7000;
+    const perg = FATOS.slice().sort(() => Math.random() - 0.5).slice(0, N);
+    const cont = el("span", { text: `1 de ${N}` }), acEl = el("span", { text: "Acertos: 0" });
+    const status = el("div", { class: "j-status" }, cont, acEl);
+    const q = el("div", { class: "dec-q", "aria-live": "polite" });
+    const barra = el("i"), bar = el("div", { class: "dec-bar", "aria-hidden": "true" }, barra);
+    const b60 = el("button", { type: "button", text: "Anos 60" }), b70 = el("button", { type: "button", text: "Anos 70" });
+    const fb = el("p", { class: "dec-fb", "aria-live": "polite" });
+    area.append(el("div", { class: "dec" }, status, bar, q, el("div", { class: "dec-ops" }, b60, b70), fb));
+    let i = 0, pts = 0, acertos = 0, t0 = 0, raf = 0, espera = 0, aberta = false, fimJogo = false;
+    function mostrar() {
+      const [texto] = perg[i];
+      q.textContent = texto; cont.textContent = `${i + 1} de ${N}`; fb.textContent = ""; fb.className = "dec-fb";
+      b60.disabled = b70.disabled = false; aberta = true; t0 = performance.now();
+      cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
+    }
+    function tick(now) {
+      if (!aberta) return;
+      const resto = Math.max(0, 1 - (now - t0) / TEMPO);
+      barra.style.transform = `scaleX(${resto})`;
+      if (resto <= 0) return responder(null);
+      raf = requestAnimationFrame(tick);
+    }
+    function responder(dec) {
+      if (!aberta) return; aberta = false; cancelAnimationFrame(raf);
+      b60.disabled = b70.disabled = true;
+      const ano = perg[i][1], certa = ano < 1970 ? 60 : 70;
+      const resto = Math.max(0, 1 - (performance.now() - t0) / TEMPO);
+      if (dec === certa) { acertos++; const g = 100 + Math.round(resto * 100); pts += g; fb.className = "dec-fb certo"; fb.textContent = `Certo! Foi em ${ano}. +${g}`; }
+      else { fb.className = "dec-fb errado"; fb.textContent = (dec === null ? "Tempo esgotado! " : "Ops! ") + `Foi em ${ano}, anos ${certa}.`; }
+      api.pts(pts); acEl.textContent = `Acertos: ${acertos}`;
+      espera = setTimeout(() => { i++; if (i < N) mostrar(); else { fimJogo = true; api.fim(pts, `${acertos} de ${N} acertos`); } }, 1500);
+    }
+    b60.addEventListener("click", () => responder(60));
+    b70.addEventListener("click", () => responder(70));
+    mostrar();
+    return { parar() { aberta = false; cancelAnimationFrame(raf); clearTimeout(espera); } };
+  }
+
+  $("bJogos").addEventListener("click", abrir);
+  return { abrir, fechar };
 })();
 </script>
 </body>

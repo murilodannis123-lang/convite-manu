@@ -472,7 +472,7 @@ body.fechado{overflow:hidden}
   <p class="giro"><b>Gire o disco</b> com o dedo e mexa na música</p>
   <p class="agora" aria-live="polite">Tocando: <b id="agoraNome">Disco Dourado</b><span id="agoraEstilo"> · Disco · anos 70</span></p>
   <div class="capas" id="capas" role="group" aria-label="Escolha o disco">
-    <p class="capas-tit">Troque o disco</p>
+    <p class="capas-tit">Qual a musica preferida da Manu?</p>
   </div>
 
   <div class="title-row">
@@ -501,7 +501,7 @@ body.fechado{overflow:hidden}
   <p class="hint">CLIQUE NOS BOTÕES<br>ABAIXO PARA INTERAGIR</p>
 
   <nav class="btns">
-    <button class="btn quiz" id="abrirQuiz" type="button">
+    <button class="btn quiz" id="abrirQuiz" type="button" hidden>
       <svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
       Quiz: a música da Manu
     </button>
@@ -1195,13 +1195,12 @@ const Som = (() => {
   const buffers = {};
   const silencio = new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");
   silencio.loop = true;
-  Trilha.render(0).then(() => { pronto0 = true; if (querTocar && !src) tocarFaixa(faixa, 0); }).catch(() => {});
   const VOL = 0.85;
   async function buffer(i){
     if (buffers[i]) return buffers[i];
-    const r = await Trilha.render(i);
-    const b = ctx.createBuffer(1, r.pcm.length, r.sampleRate);
-    b.getChannelData(0).set(r.pcm);
+    const r = await fetch(QUIZ.musicas[i].audio);
+    const buf = await r.arrayBuffer();
+    const b = await ctx.decodeAudioData(buf);
     return (buffers[i] = b);
   }
   function pararSrc(quando = 0){
@@ -1222,7 +1221,7 @@ const Som = (() => {
     s.start(t); g.gain.setTargetAtTime(1, t, 0.25);
     src = s; srcGain = g;
     // prepara as outras faixas em segundo plano
-    setTimeout(() => { [1, 2, 3].reduce((p, k) => p.then(() => Trilha.render(k)).catch(() => {}), Promise.resolve()); }, 2500);
+    setTimeout(() => { [1, 2, 3].reduce((p, k) => p.then(() => buffer(k)).catch(() => {}), Promise.resolve()); }, 2500);
   }
   function chiado(atraso = 0, dur = 1.4, vol = 0.5){
     if (!ctx) return;
@@ -1241,7 +1240,7 @@ const Som = (() => {
     if (ctx.state !== "running") ctx.resume().catch(() => {});
     querTocar = true;
     chiado(Math.max(0, atraso - 0.45), 1.6, 0.55);
-    if (pronto0 || faixa !== 0) tocarFaixa(faixa, atraso);
+    tocarFaixa(faixa, atraso);
   }
   // disco freando + troca de faixa (usado pela vitrola)
   async function trocar(i){
@@ -1276,7 +1275,7 @@ const Som = (() => {
   document.addEventListener("pointerdown", () => { if (ctx && !mudo && ctx.state !== "running") ctx.resume().catch(()=>{}); });
   return { abrir, trocar, setRate, alternar,
     get faixa(){ return faixa; }, get mudo(){ return mudo; },
-    get tocando(){ return !!(ctx && src && ctx.state === "running" && !mudo); }, get pronto(){ return pronto0; } };
+    get tocando(){ return !!(ctx && src && ctx.state === "running" && !mudo); }, get pronto(){ return true; } };
 })();
 
 /* ---------- Abertura animada: vinil sai da capa, agulha desce, ondas revelam o convite ---------- */
@@ -1313,22 +1312,38 @@ somBtn.addEventListener("click", () => { Som.alternar(); pintaSom(); });
 const Vitrola = (() => {
   const capas = $("capas"), prato = $("prato"), braco = $("braco"), selo = $("selo");
   const ARTE = ["a-disco", "a-twist", "a-soul", "a-funk"];
-  const CURTO = ["Disco", "Twist", "Soul", "Funk"];
+  const CORES = [
+    ["#e8692a", "#f0a531", "#dc5f7f"],
+    ["#dc5f7f", "#e8692a", "#f0a531"],
+    ["#2c7c70", "#f0a531", "#e8692a"],
+    ["#f0a531", "#2c7c70", "#dc5f7f"]
+  ];
   let atual = 0, ocupado = false;
   const pinta = i => {
-    const m = Trilha.MUSICAS[i];
-    selo.style.background = `radial-gradient(circle, ${m.cores[0]} 0 38%, ${m.cores[1]} 38% 62%, ${m.cores[2]} 62%)`;
-    $("seloData").textContent = m.nome.toUpperCase();
-    $("agoraNome").textContent = m.nome; $("agoraEstilo").textContent = " · " + m.estilo;
+    const m = QUIZ.musicas[i];
+    const cs = CORES[i];
+    selo.style.background = `radial-gradient(circle, ${cs[0]} 0 38%, ${cs[1]} 38% 62%, ${cs[2]} 62%)`;
+    $("seloData").textContent = m.artista.toUpperCase();
+    $("agoraNome").textContent = m.titulo; $("agoraEstilo").textContent = " · " + m.artista;
     capas.querySelectorAll(".capa").forEach((b, k) => b.setAttribute("aria-pressed", String(k === i)));
   };
-  Trilha.MUSICAS.forEach((m, i) => {
+  QUIZ.musicas.forEach((m, i) => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "capa"; b.setAttribute("aria-pressed", "false");
     b.setAttribute("aria-label", `Tocar ${m.nome}, ${m.estilo}`);
-    b.innerHTML = `<span class="arte ${ARTE[i]}" style="--c1:${m.cores[0]};--c2:${m.cores[1]};--c3:${m.cores[2]}"><b>${CURTO[i]}</b></span><span class="nome"></span>`;
-    b.querySelector(".nome").textContent = m.nome;
-    b.addEventListener("click", () => trocar(i));
+    const cs = CORES[i];
+    const curto = m.artista.substring(0, 8);
+    b.innerHTML = `<span class="arte ${ARTE[i]}" style="--c1:${cs[0]};--c2:${cs[1]};--c3:${cs[2]}"><b style="font-size:12px;">${curto}</b></span><span class="nome"></span>`;
+    b.querySelector(".nome").textContent = m.titulo;
+    b.addEventListener("click", () => {
+      trocar(i);
+      if (m.id === QUIZ.certa) {
+        setTimeout(() => {
+          aviso(`<strong>Acertou!</strong> Essa é a música preferida da Manu, qual a sua?`, "good");
+          Fogos.start(5000);
+        }, 1500);
+      }
+    });
     capas.appendChild(b);
   });
   pinta(0);

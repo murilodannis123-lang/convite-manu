@@ -36,8 +36,8 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 button,a{-webkit-tap-highlight-color:transparent}
-html{margin:0;min-height:100%;background-color:var(--creme)}
-body{margin:0;min-height:100%;overflow-x:hidden;overscroll-behavior-y:none}
+html{margin:0;min-height:100%;background-color:var(--creme);overscroll-behavior:none}
+body{margin:0;min-height:100%;overflow-x:hidden;overscroll-behavior:none}
 .wrap{overflow-x:clip}
 @supports not (overflow:clip){.wrap{overflow-x:hidden}}
 body{
@@ -48,7 +48,7 @@ body{
   overflow-x:hidden;
 }
 /* raios de sol ao fundo */
-.bg{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100lvh;z-index:-1;
+.bg{position:fixed;top:-20vh;left:0;width:100vw;height:140vh;z-index:-1;
   background:
     radial-gradient(70% 45% at 50% 16%, rgba(251,242,222,.95) 0 30%, transparent 70%),
     repeating-conic-gradient(from 0deg at 50% 16%, rgba(232,105,42,.09) 0deg 7deg, transparent 7deg 14deg),
@@ -337,7 +337,7 @@ body.fechado{overflow:hidden}
 .splash.abrindo .lp-capa{transform:translateX(-18%) rotate(-5deg)}
 .splash.abrindo .lp-disco{transform:translateX(52%)}
 .splash.abrindo .lp-braco{opacity:1}
-.splash.agulha .lp-braco{transform:rotate(-6deg)}
+.splash.agulha .lp-braco{transform:rotate(-16deg)}
 .splash.agulha .lp-disco{animation:saiGira 1.8s linear infinite}
 @keyframes saiGira{from{transform:translateX(52%) rotate(0deg)}to{transform:translateX(52%) rotate(360deg)}}
 .splash.abrindo .s-btn,.splash.abrindo .s-note{opacity:0;transition:opacity .25s}

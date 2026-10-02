@@ -1211,13 +1211,14 @@ const Som = (() => {
   async function tocarFaixa(i, atraso = 0){
     faixa = i;
     if (!ctx) return;
+    const targetStartTime = ctx.currentTime + atraso;
     const b = await buffer(i);
     if (faixa !== i) return;
     pararSrc();
     const s = ctx.createBufferSource(); s.buffer = b; s.loop = true; s.playbackRate.value = 1; rate = 1;
     const g = ctx.createGain(); g.gain.value = 0;
     s.connect(g); g.connect(gain);
-    const t = ctx.currentTime + atraso;
+    const t = Math.max(ctx.currentTime, targetStartTime);
     s.start(t); g.gain.setTargetAtTime(1, t, 0.25);
     src = s; srcGain = g;
     // prepara as outras faixas em segundo plano
@@ -1253,6 +1254,7 @@ const Som = (() => {
       pararSrc(0.7);
     }
     faixa = i;
+    if (ctx) buffer(i).catch(()=>{});
     return { comecar: async () => { trocando = false; if (ctx && querTocar) { chiado(0, 0.9, 0.45); await tocarFaixa(i, 0.35); } } };
   }
   function setRate(r, vol){

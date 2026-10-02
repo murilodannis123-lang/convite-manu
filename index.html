@@ -335,9 +335,11 @@ body.fechado{overflow:hidden}
 .lp-braco svg{width:100%;height:100%;display:block}
 .splash.abrindo .lp{transform:translateX(-14%)}
 .splash.abrindo .lp-capa{transform:translateX(-18%) rotate(-5deg)}
-.splash.abrindo .lp-disco{transform:translateX(52%);animation:giraSplash 1.8s linear infinite}
+.splash.abrindo .lp-disco{transform:translateX(52%)}
 .splash.abrindo .lp-braco{opacity:1}
 .splash.agulha .lp-braco{transform:rotate(-6deg)}
+.splash.agulha .lp-disco{animation:saiGira 1.8s linear infinite}
+@keyframes saiGira{from{transform:translateX(52%) rotate(0deg)}to{transform:translateX(52%) rotate(360deg)}}
 .splash.abrindo .s-btn,.splash.abrindo .s-note{opacity:0;transition:opacity .25s}
 .ondas-tela{position:fixed;inset:0;z-index:60;pointer-events:none;display:grid;grid-template-columns:repeat(4,1fr)}
 .ondas-tela i{display:block;transform:translateY(105%);border-radius:40px 40px 0 0}
